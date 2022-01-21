@@ -102,9 +102,19 @@ class TestLocks(unittest.TestCase):
     def test_inter_lock(self):
         c = cg.from_lib('c7552g')
         cl, key = locks.inter_lock(c, 8)
+        cg.lint(cl)
         self.assertFalse(check_for_difference(c, cl, key))
         wkey = {k: not v for k, v in key.items()}
         self.assertTrue(check_for_difference(c, cl, wkey))
+
+    def test_inter_lock_itc(self):
+        c = cg.from_lib('b22_Cg')
+        cl, key = locks.inter_lock(c, 16)
+        cg.lint(cl)
+        self.assertFalse(check_for_difference(c, cl, key))
+        wkey = {k: not v for k, v in key.items()}
+        self.assertTrue(check_for_difference(c, cl, wkey))
+
 
     def test_lebl(self):
         c = self.c432

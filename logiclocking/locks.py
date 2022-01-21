@@ -496,81 +496,7 @@ def lut_lock(c,
     return cl, keys
 
 
-def sfll_hd(c, width, hd):
-    """
-    Locks a circuitgraph with SFLL-HD as outlined in
-    Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
-    Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
-    Logic Locking: From Theory To Practice. In Proceedings of the 2017 ACM
-    SIGSAC Conference on Computer and Communications Security (CCS ’17).
-    Association for Computing Machinery, New York, NY, USA, 1601–1618.
-
-    Parameters
-    ----------
-    c: circuitgraph.CircuitGraph
-            Circuit to lock.
-    width: int
-            key width, also the minimum fanin of the gates to lock.
-    hd: int
-            the hamming distance to lock with, as explained in the paper.
-
-    Returns
-    -------
-    circuitgraph.CircuitGraph, dict of str:bool
-            the locked circuit and the correct key value for each key input
-    """
-    # create copy to lock
-    cl = cg.copy(c)
-
-    # parse popcount
-    p = logic.popcount(width)
-
-    # find output with large enough fanin
-    potential_outs = [o for o in cl.outputs()
-                      if len(cl.startpoints(o)) >= width]
-    if not potential_outs:
-        print('input with too small')
-        return None
-    out = choice(tuple(potential_outs))
-
-    # create key
-    key = {f'key_{i}': choice([True, False])
-           for i in range(width)}
-
-    # instantiate and connect hd circuits
-    cl.add_subcircuit(p, 'flip_pop')
-    cl.add_subcircuit(p, 'restore_pop')
-
-    # connect inputs
-    for i, inp in enumerate(sample(tuple(cl.startpoints(out)), width)):
-        cl.add(f'key_{i}', 'input')
-        cl.add(f'hardcoded_key_{i}', '1' if key[f'key_{i}'] else '0')
-        cl.add(f'restore_xor_{i}', 'xor', fanin=[f'key_{i}', inp])
-        cl.add(f'flip_xor_{i}', 'xor', fanin=[f'hardcoded_key_{i}', inp])
-        cl.connect(f'flip_xor_{i}', f'flip_pop_in_{i}')
-        cl.connect(f'restore_xor_{i}', f'restore_pop_in_{i}')
-
-    # connect outputs
-    cl.add('flip_out', 'and')
-    cl.add('restore_out', 'and')
-    for i, v in enumerate(format(hd, f'0{cg.clog2(width)+1}b')[::-1]):
-        cl.add(f'hd_{i}', v)
-        cl.add(f'restore_out_xnor_{i}', 'xnor',
-               fanin=[f'hd_{i}', f'restore_pop_out_{i}'], fanout='restore_out')
-        cl.add(f'flip_out_xnor_{i}', 'xnor',
-               fanin=[f'hd_{i}', f'flip_pop_out_{i}'], fanout='flip_out')
-
-    # flip output
-    out_driver = cl.fanin(out)
-    old_out = cl.uid(f"{out}_pre_lock")
-    cl = cg.relabel(cl, {out: old_out})
-    cl.add(out, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True)
-
-    cg.lint(cl)
-    return cl, key
-
-
-def tt_lock(c, width):
+def tt_lock(c, width, target_output=None):
     """
     Locks a circuitgraph with TTLock as outlined in
     M. Yasin, A. Sengupta, B. Schafer, Y. Makris, O. Sinanoglu, and
@@ -583,6 +509,9 @@ def tt_lock(c, width):
             Circuit to lock.
     width: int
             the minimum fanin of the gates to lock.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
 
     Returns
     -------
@@ -592,22 +521,27 @@ def tt_lock(c, width):
     # create copy to lock
     cl = cg.copy(c)
 
-    # find output with large enough fanin
-    potential_outs = [o for o in cl.outputs()
-                      if len(cl.startpoints(o)) >= width]
-    if not potential_outs:
-        raise ValueError(f'no output with input width >= {width}')
-    out = choice(tuple(potential_outs))
+    if len(c.inputs()) < width:
+        raise ValueError(f"Not enough inputs to lock with width '{width}'")
+
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) < width:
+        target_inputs |= set(random.sample(list(cl.inputs() - target_inputs),
+                                           width - len(target_inputs)))
+    target_inputs = list(target_inputs)
 
     # create key
-    key = {f'key_{i}': choice([True, False])
+    key = {f'key_{i}': random.choice([True, False])
            for i in range(width)}
 
     # connect comparators
     cl.add('flip_out', 'and')
     cl.add('restore_out', 'and')
-    for i, inp in enumerate(sample(tuple(cl.startpoints(out)),
-                                          width)):
+    for i, inp in enumerate(random.sample(target_inputs, width)):
         cl.add(f'key_{i}', 'input')
         cl.add(f'hardcoded_key_{i}', '1' if key[f'key_{i}'] else '0')
         cl.add(f'restore_xor_{i}', 'xor', fanin=[f'key_{i}', inp],
@@ -616,10 +550,9 @@ def tt_lock(c, width):
                fanin=[f'hardcoded_key_{i}', inp], fanout='flip_out')
 
     # flip output
-    out_driver = cl.fanin(out)
-    old_out = cl.uid(f"{out}_pre_lock")
-    cl = cg.relabel(cl, {out: old_out})
-    cl.add(out, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True)
+    old_out = cl.uid(f"{target_output}_pre_lock")
+    cl = cg.relabel(cl, {target_output: old_out})
+    cl.add(target_output, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True)
 
     cg.lint(cl)
     return cl, key
@@ -719,7 +652,89 @@ def tt_lock_sen(c, width, nsamples=10):
     return cl, key
 
 
-def sfll_flex(c, width, n):
+def sfll_hd(c, width, hd, target_output=None):
+    """
+    Locks a circuitgraph with SFLL-HD as outlined in
+    Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
+    Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
+    Logic Locking: From Theory To Practice. In Proceedings of the 2017 ACM
+    SIGSAC Conference on Computer and Communications Security (CCS ’17).
+    Association for Computing Machinery, New York, NY, USA, 1601–1618.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            key width, also the minimum fanin of the gates to lock.
+    hd: int
+            the hamming distance to lock with, as explained in the paper.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+    """
+    # create copy to lock
+    cl = cg.copy(c)
+
+    # parse popcount
+    p = logic.popcount(width)
+
+    if len(c.inputs()) < width:
+        raise ValueError(f"Not enough inputs to lock with width '{width}'")
+
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) < width:
+        target_inputs |= set(random.sample(list(cl.inputs() - target_inputs),
+                                           width - len(target_inputs)))
+    target_inputs = list(target_inputs)
+
+    # create key
+    key = {f'key_{i}': random.choice([True, False])
+           for i in range(width)}
+
+    # instantiate and connect hd circuits
+    cl.add_subcircuit(p, 'flip_pop')
+    cl.add_subcircuit(p, 'restore_pop')
+
+    # connect inputs
+    for i, inp in enumerate(random.sample(target_inputs, width)):
+        cl.add(f'key_{i}', 'input')
+        cl.add(f'hardcoded_key_{i}', '1' if key[f'key_{i}'] else '0')
+        cl.add(f'restore_xor_{i}', 'xor', fanin=[f'key_{i}', inp])
+        cl.add(f'flip_xor_{i}', 'xor', fanin=[f'hardcoded_key_{i}', inp])
+        cl.connect(f'flip_xor_{i}', f'flip_pop_in_{i}')
+        cl.connect(f'restore_xor_{i}', f'restore_pop_in_{i}')
+
+    # connect outputs
+    cl.add('flip_out', 'and')
+    cl.add('restore_out', 'and')
+    for i, v in enumerate(format(hd, f'0{cg.clog2(width)+1}b')[::-1]):
+        cl.add(f'hd_{i}', v)
+        cl.add(f'restore_out_xnor_{i}', 'xnor',
+               fanin=[f'hd_{i}', f'restore_pop_out_{i}'], fanout='restore_out')
+        cl.add(f'flip_out_xnor_{i}', 'xnor',
+               fanin=[f'hd_{i}', f'flip_pop_out_{i}'], fanout='flip_out')
+
+    # flip output
+    old_out = cl.uid(f"{target_output}_pre_lock")
+    cl = cg.relabel(cl, {target_output: old_out})
+    cl.add(target_output, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True)
+
+    cg.lint(cl)
+    return cl, key
+
+
+
+def sfll_flex(c, width, n, target_output=None):
     """
     Locks a circuitgraph with SFLL-flex as outlined in
     Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
@@ -734,7 +749,11 @@ def sfll_flex(c, width, n):
             Circuit to lock.
     width: int
             the minimum fanin of the gates to lock.
-    n: FIXME
+    n: int
+            number of input patterns to lock.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
 
     Returns
     -------
@@ -744,13 +763,15 @@ def sfll_flex(c, width, n):
     # create copy to lock
     cl = cg.copy(c)
 
-    # find output with large enough fanin
-    potential_outs = [o for o in cl.outputs()
-                      if len(cl.startpoints(o)) >= width]
-    if not potential_outs:
-        print('input with too small')
-        return None
-    out = choice(tuple(potential_outs))
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) < width:
+        target_inputs |= set(random.sample(list(cl.inputs() - target_inputs),
+                                           width - len(target_inputs)))
+    target_inputs = list(target_inputs)
 
     # create key
     key = {f'key_{i}': choice([True, False])
@@ -764,7 +785,7 @@ def sfll_flex(c, width, n):
         cl.add(f'flip_and_{j}', 'and', fanout='flip_out')
         cl.add(f'restore_and_{j}', 'and', fanout='restore_out')
 
-    for i, inp in enumerate(sample(tuple(cl.startpoints(out)), width)):
+    for i, inp in enumerate(random.sample(target_inputs, width)):
         for j in range(n):
             cl.add(f'key_{i+j*width}', 'input')
             cl.add(f'hardcoded_key_{i}_{j}',
@@ -777,10 +798,9 @@ def sfll_flex(c, width, n):
                    fanout=f'flip_and_{j}')
 
     # flip output
-    out_driver = cl.fanin(out)
-    old_out = cl.uid(f"{out}_pre_lock")
-    cl = cg.relabel(cl, {out: old_out})
-    cl.add(out, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True)
+    old_out = cl.uid(f"{target_output}_pre_lock")
+    cl = cg.relabel(cl, {target_output: old_out})
+    cl.add(target_output, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True)
 
     cg.lint(cl)
     return cl, key
@@ -1123,6 +1143,7 @@ def inter_lock(c, bw):
         gate = n
         gates = [n]
         for _ in range(path_length):
+            # if (len(cl.fanin(gate)) != 2 or len(cl.fanout(gate)) == 0 or
             if (len(cl.fanin(gate)) != 2 or len(cl.fanout(gate)) != 1 or
                     gate in filtered_gates or 
                     len(cl.fanin(gate) & filtered_gates) > 0 or
@@ -1210,7 +1231,7 @@ def inter_lock(c, bw):
                     try:
                         conn = cl.fanout(f"swb_{swb_idx}.out_{o_idx}").pop()
                     except KeyError:
-                        conn = cl.add(f"swb_{swb_idx}.out_{o_idx}_load",
+                        conn = cl.add(f"swb_{swb_idx}_out_{o_idx}_load",
                                       "buf",
                                       fanin=f"swb_{swb_idx}.out_{o_idx}")
                     cl.connect(conn, fo)
