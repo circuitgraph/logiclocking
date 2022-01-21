@@ -115,6 +115,13 @@ class TestLocks(unittest.TestCase):
         wkey = {k: not v for k, v in key.items()}
         self.assertTrue(check_for_difference(c, cl, wkey))
 
+    def test_inter_lock_reduced_swb(self):
+        c = cg.from_lib('c7552g')
+        cl, key = locks.inter_lock_reduced_swb(c, 8)
+        cg.lint(cl)
+        self.assertFalse(check_for_difference(c, cl, key))
+        wkey = {k: not v for k, v in key.items()}
+        self.assertTrue(check_for_difference(c, cl, wkey))
 
     def test_lebl(self):
         c = self.c432

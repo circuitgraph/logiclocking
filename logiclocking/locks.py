@@ -1249,8 +1249,175 @@ def inter_lock(c, bw):
     for k in key:
         cl.set_type(k, "input")
 
-    # cg.lint(cl)
+    cg.lint(cl)
     return cl, key
+
+
+def inter_lock_reduced_swb(c, bw):
+    """
+    Locks a circuitgraph with InterLock as outlined in
+    Kamali, Hadi Mardani, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
+    "Interlock: An intercorrelated logic and routing locking."
+    In 2020 IEEE/ACM International Conference On Computer Aided Design (ICCAD),
+    pp. 1-9. IEEE, 2020.
+
+    However, each switchbox is reduced from 3 keys to 1 key due to the fact
+    that for 100% utilization, the other 2 keys will never be used. Essentially,
+    the muxes at the output of the switchbox are removed.
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    bw: int
+            The size of the keyed rounting block. A bw of m results
+            in an m x m sized KeyRB.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+    """
+    cl = cg.copy(c)
+    cg.lint(cl)
+
+    # generate switch
+    m = cg.strip_io(logic.mux(2))
+    s = cg.Circuit(name='switch')
+    s.add_subcircuit(m, f'm0')
+    s.add_subcircuit(m, f'm1')
+    s.add('in_0', 'input', fanout=['m0_in_0', 'm1_in_1'])
+    s.add('in_1', 'input', fanout=['m0_in_1', 'm1_in_0'])
+    s.add('ex_in_0', 'input')
+    s.add('ex_in_1', 'input')
+    # f1 and f2 starts as and gates, must be updated later
+    s.add('f1_out', 'and', fanin=['m0_out', 'ex_in_0'])
+    s.add('f2_out', 'and', fanin=['m1_out', 'ex_in_1'])
+    s.add('key_0', 'input', fanout=['m0_sel_0', 'm1_sel_0'])
+    s.add('out_0', 'buf', fanin='f1_out', output=True)
+    s.add('out_1', 'buf', fanin='f2_out', output=True)
+
+    sbb = cg.BlackBox("switch",
+                      ["in_0", "in_1", "ex_in_0", "ex_in_1", "key_0"],
+                      ["out_0", "out_1"])
+
+    # Select paths to embed in the routing network
+    path_length = 2 * cg.clog2(bw) - 2
+    paths = []
+    locked_gates = set()
+    
+    filtered_gates = set()
+    def filter_gate(n):
+        gate = n
+        gates = [n]
+        for _ in range(path_length):
+            # if (len(cl.fanin(gate)) != 2 or len(cl.fanout(gate)) == 0 or
+            if (len(cl.fanin(gate)) != 2 or len(cl.fanout(gate)) != 1 or
+                    gate in filtered_gates or 
+                    len(cl.fanin(gate) & filtered_gates) > 0 or
+                    len(cl.fanout(gate) & filtered_gates) > 0):
+                return False
+            gate = cl.fanout(gate).pop()
+            gates.append(gate)
+        filtered_gates.update(gates)
+        for gate in gates:
+            filtered_gates.update(cl.fanin(gate))
+        return True
+
+    candidate_gates = filter(filter_gate, cl.nodes())
+    for _ in range(bw):
+        try:
+            gate = next(candidate_gates)
+        except StopIteration:
+            raise ValueError('Not enough candidate gates found for locking')
+        path = [gate]
+        for _ in range(path_length - 1):
+            gate = cl.fanout(gate).pop()
+            path.append(gate)
+        paths.append(path)
+
+    # generate banyan with J rows and I columns of SwBs
+    I = path_length
+    J = int(bw/2)
+
+    for i in range(I*J):
+        cl.add_blackbox(sbb,
+                        f"swb_{i}")
+
+    # make connections
+    swb_ins = [f'swb_{i//2}.in_{i%2}' for i in range(I*J*2)]
+    swb_outs = [f'swb_{i//2}.out_{i%2}' for i in range(I*J*2)]
+    connect_banyan_bb(cl, swb_ins, swb_outs, bw)
+
+    # get banyan io
+    net_ins = swb_ins[:bw]
+    net_outs = swb_outs[-bw:]
+
+    # generate key
+    # In the example from the paper, the paths in a SWB directly from an
+    # input to an output are never used. Starting with that implemetation.
+    # Could sometimes choose paths less than `path_length` and use these
+    # connections with a decoy external input, but such a strategy is not
+    # discussed in the paper.
+    swaps = []
+    key = {}
+    for i in range(I*J):
+        swaps.append(choice([True, False]))
+        if swaps[-1]:
+            key[f'swb_{i}_key_0'] = True
+        else:
+            key[f'swb_{i}_key_0'] = False
+
+    f_gates = dict()
+
+    # Add paths to banyan 
+    # Get a random intial ordering of paths
+    input_order = list(range(bw))
+    shuffle(input_order)
+    for i, p_idx in enumerate(input_order):
+        path = paths[p_idx]
+        swb_idx = (i // 2)
+        i_idx = i % 2
+        prev_node = cl.fanin(path[0]).pop()
+        cl.connect(prev_node, f'swb_{swb_idx}.in_{i_idx}')
+        for j, n in enumerate(path):
+            o_idx = i_idx ^ int(swaps[swb_idx])
+            ex_i = (cl.fanin(n) - {prev_node}).pop()
+            cl.connect(ex_i, f'swb_{swb_idx}.ex_in_{o_idx}')
+            f_gates[f"swb_{swb_idx}_f{o_idx+1}_out"] = cl.type(n)
+            if j != len(path) - 1:
+                next_n = cl.fanout(f'swb_{swb_idx}.out_{o_idx}').pop()
+                next_n = cl.fanout(next_n).pop()
+                swb_idx = int(next_n.split(".")[0].split('_')[-1])
+                i_idx = int(next_n.split(".")[-1].split('_')[-1])
+                prev_node = n
+            else:
+                for fo in cl.fanout(n):
+                    cl.disconnect(n, fo)
+                    try:
+                        conn = cl.fanout(f"swb_{swb_idx}.out_{o_idx}").pop()
+                    except KeyError:
+                        conn = cl.add(f"swb_{swb_idx}_out_{o_idx}_load",
+                                      "buf",
+                                      fanin=f"swb_{swb_idx}.out_{o_idx}")
+                    cl.connect(conn, fo)
+
+    for path in paths:
+        for node in path:
+            cl.remove(node)
+
+    for i in range(I*J):
+        cl.fill_blackbox(f"swb_{i}", s)
+
+    for k, v in f_gates.items():
+        cl.set_type(k, v)
+
+    for k in key:
+        cl.set_type(k, "input")
+
+    cg.lint(cl)
+    return cl, key
+
 
 
 def lebl(c,bw,ng):
