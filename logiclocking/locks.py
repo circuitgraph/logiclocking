@@ -249,12 +249,14 @@ def mux_lock(c, keylen, avoid_loops=False, key_prefix='key_'):
             cl.connect(decoy_gate, f'mux_{i}_in_1')
 
     cg.lint(cl)
+    if avoid_loops and cl.is_cyclic():
+        raise ValueError("Locked circuit is cyclic")
     return cl, key
 
 
-def random_lut_lock(c, num_gates, lut_width):
+def random_lut_lock(c, num_gates, lut_width, gates=None):
     """
-    Locks a circuitgraph by replacing random gates with LUTS. This is kind of
+    Locks a circuitgraph by replacing random gates with LUTs. This is kind of
     like applying LUT-lock with no replacement strategy.
     (H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
     "LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
@@ -269,6 +271,8 @@ def random_lut_lock(c, num_gates, lut_width):
             the number of gates to lock.
     lut_width: int
             LUT width, defines maximum fanin of locked gates.
+    gates: list of str
+            The gates to lock. If not provided, will be randomly sampled
 
     Returns
     -------
@@ -284,7 +288,17 @@ def random_lut_lock(c, num_gates, lut_width):
     # randomly select gates
     potentialGates = set(g for g in cl.nodes() - cl.io()
                          if len(cl.fanin(g)) <= lut_width)
-    gates = sample(tuple(potentialGates), num_gates)
+    if gates:
+        if len(gates) != num_gates:
+            raise ValueError(f"Got 'num_gates' of {num_gates} but length of "
+                             f"'gates' is {len(gates)}")
+        if any(len(cl.fanin(g)) > lut_width for g in gates):
+            raise ValueError("cannot lock a gate with fanin greater than "
+                             "lut_width")
+        if any(g in cl.io() for g in gates):
+            raise ValueError("cannot lock an input/output gate")
+    else:
+        gates = sample(tuple(potentialGates), num_gates)
     potentialGates -= set(gates)
     potentialGates -= cl.transitive_fanout(gates)
 
@@ -294,8 +308,11 @@ def random_lut_lock(c, num_gates, lut_width):
 
         fanout = list(cl.fanout(gate))
         fanin = list(cl.fanin(gate))
-        padding = sample(tuple(potentialGates - cl.fanin(gate)),
-                                lut_width - len(fanin))
+        try:
+            padding = sample(tuple(potentialGates - cl.fanin(gate)),
+                                    lut_width - len(fanin))
+        except ValueError:
+            raise ValueError("Could not find enough viable gates for padding")
 
         #create LUT
         cl.add_subcircuit(m, f'lut_{i}')
@@ -866,7 +883,7 @@ def connect_banyan_bb(cl, swb_ins, swb_outs, bw):
                 cl.add(f"swb_{i}_{j}_r_cross", "buf", fanin=swb_outs[out_i], fanout=swb_ins[in_i])
 
 
-def full_lock(c, bw, lw):
+def full_lock(c, bw, lw, avoid_loops=False):
     """
     Locks a circuitgraph with Full-Lock as outlined in
     Hadi Mardani Kamali, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
@@ -883,6 +900,9 @@ def full_lock(c, bw, lw):
             Width of Banyan network to use, must follow bw = 2**n, n>1.
     lut_width: int
             Width to use for inserted LUTs, must evenly divide bw.
+    avoid_loops: bool
+            If True, gates fed by the Banyan network will be selected
+            such that they do not cause combinational loops.
 
     Returns
     -------
@@ -890,7 +910,20 @@ def full_lock(c, bw, lw):
             the locked circuit and the correct key value for each key input
     """
     # lock with luts
-    cl, key = random_lut_lock(c, int(bw/lw), lw)
+    if avoid_loops:
+        gates = []
+        potential_gates = set(g for g in c.nodes() - c.io()
+                             if len(c.fanin(g)) <= lw)
+        for _ in range(int(bw/lw)):
+            gates.append(random.choice(list(potential_gates)))
+            potential_gates -= c.transitive_fanin(gates[-1])
+            potential_gates -= c.transitive_fanout(gates[-1])
+            if not potential_gates:
+                raise ValueError("Could not find enough gates to make "
+                                 "acyclic lock")
+        cl, key = random_lut_lock(c, int(bw/lw), lw, gates=gates)
+    else:
+        cl, key = random_lut_lock(c, int(bw/lw), lw)
 
     # generate switch
     m = cg.strip_io(logic.mux(2))
@@ -956,6 +989,8 @@ def full_lock(c, bw, lw):
         cl.set_type(k, "input")
 
     cg.lint(cl)
+    if avoid_loops and cl.is_cyclic():
+        raise ValueError("Locked circuit is cyclic")
     return cl, key
 
 def full_lock_mux(c, bw, lw):

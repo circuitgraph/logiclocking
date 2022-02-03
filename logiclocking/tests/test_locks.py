@@ -37,6 +37,14 @@ class TestLocks(unittest.TestCase):
         wkey = {k: not v for k, v in key.items()}
         self.assertTrue(check_for_difference(c, cl, wkey))
 
+    def test_mux_lock_avoid_loops(self):
+        c = self.c880
+        cl, key = locks.mux_lock(c, 32, avoid_loops=True)
+        self.assertFalse(cl.is_cyclic())
+        self.assertFalse(check_for_difference(c, cl, key))
+        wkey = {k: not v for k, v in key.items()}
+        self.assertTrue(check_for_difference(c, cl, wkey))
+
     def test_random_lut_lock(self):
         c = self.c17
         cl, key = locks.random_lut_lock(c, 2, 2)
@@ -88,6 +96,14 @@ class TestLocks(unittest.TestCase):
     def test_full_lock(self):
         c = self.c17
         cl, key = locks.full_lock(c, 8, 2)
+        self.assertFalse(check_for_difference(c, cl, key))
+        wkey = {k: not v for k, v in key.items()}
+        self.assertTrue(check_for_difference(c, cl, wkey))
+
+    def test_full_lock_avoid_loops(self):
+        c = self.c880
+        cl, key = locks.full_lock(c, 8, 2, avoid_loops=True)
+        self.assertFalse(cl.is_cyclic())
         self.assertFalse(check_for_difference(c, cl, key))
         wkey = {k: not v for k, v in key.items()}
         self.assertTrue(check_for_difference(c, cl, wkey))
