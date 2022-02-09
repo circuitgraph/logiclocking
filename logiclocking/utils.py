@@ -46,6 +46,7 @@ def unroll(
     ignore_pins="CK",
     initial_values=None,
     prefix="cg_unroll",
+    remove_unloaded=True,
 ):
     """
     Unrolls a sequential circuit to prepare for a combinational attack. This can be
@@ -78,6 +79,9 @@ def unroll(
             Can also pass in dict mapping flop names to values.
     prefix: str
             The prefix to use for naming unrolled nodes.
+    remove_unloaded: bool
+            If True, unloaded inputs will be removed after unrolling. This can remove
+            unused sequential signals such as the clock and reset.
 
     Returns
     -------
@@ -95,11 +99,12 @@ def unroll(
         prefix=prefix,
     )
     for k in key:
-        iter_keys = [
-            locked_circuit.uid(f"{k}_{prefix}_{i}") for i in range(num_unroll + 1)
-        ]
+        iter_keys = [f"{k}_{prefix}_{i}" for i in range(num_unroll + 1)]
         locked_circuit_unrolled.set_type(iter_keys, "buf")
         locked_circuit_unrolled.add(k, "input", fanout=iter_keys)
+
+    if remove_unloaded:
+        locked_circuit_unrolled.remove_unloaded(inputs=True)
 
     oracle_unrolled = cg.copy(locked_circuit_unrolled)
     if isinstance(key, dict):

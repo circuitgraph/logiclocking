@@ -29,7 +29,7 @@ class TestUtils(unittest.TestCase):
 
     def test_sequential_unroll(self):
         c = cg.from_lib("s27")
-        cl, key = locks.xor_lock(c, 2)
+        cl, key = locks.trll(c, 2)
         num_unroll = 4
         clu, cu = unroll(cl, key, num_unroll - 1)
         print(c.inputs())
