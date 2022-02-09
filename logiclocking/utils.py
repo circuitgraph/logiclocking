@@ -1,7 +1,5 @@
 from ast import literal_eval
 
-import networkx as nx
-from networkx.exception import NetworkXNoCycle
 import circuitgraph as cg
 from circuitgraph.sat import sat
 from circuitgraph.transform import miter
@@ -37,10 +35,10 @@ def check_for_difference(oracle, locked_circuit, key):
     return sat(m, assumptions={"sat": True, **key})
 
 
-def unroll(
+def locked_unroll(
     locked_circuit,
     key,
-    num_unroll,
+    num_copies,
     D="D",
     Q="Q",
     ignore_pins="CK",
@@ -64,8 +62,8 @@ def unroll(
             The key inputs. If a dictionary is passed in, this key is used
             to construct an unrolled oracle and this is returned in addition
             to the unrolled locked circuit
-    num_unroll: int
-            The number of times to unroll the circuit
+    num_copies: int
+            The number of unrolled copies of the circuit to create
     D: str
             The name of the D pin of the sequential elements
     Q: str
@@ -91,7 +89,7 @@ def unroll(
     """
     locked_circuit_unrolled, io_map = cg.sequential_unroll(
         locked_circuit,
-        num_unroll,
+        num_copies,
         D,
         Q,
         ignore_pins=ignore_pins,

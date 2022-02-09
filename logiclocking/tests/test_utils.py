@@ -5,7 +5,7 @@ import circuitgraph as cg
 from logiclocking import locks
 from logiclocking import (
     check_for_difference,
-    unroll,
+    locked_unroll,
     write_key,
     read_key,
 )
@@ -26,13 +26,13 @@ class TestUtils(unittest.TestCase):
         self.assertFalse(check_for_difference(c0, c1, {k: False}))
         self.assertTrue(check_for_difference(c0, c1, {k: True}))
 
-    def test_sequential_unroll(self):
+    def test_locked_unroll(self):
         c = cg.from_lib("s27")
-        cl, key = locks.trll(c, 2)
-        num_unroll = 4
-        clu, cu = unroll(cl, key, num_unroll - 1, initial_values="0")
-        self.assertEqual(len(cu.inputs()), (len(c.inputs()) - 1) * num_unroll)
-        self.assertEqual(len(cu.outputs()), len(c.outputs()) * num_unroll)
+        cl, key = locks.trll(c, 8, shuffle_key=False)
+        num_copies = 4
+        clu, cu = locked_unroll(cl, key, num_copies, initial_values="0")
+        self.assertEqual(len(cu.inputs()), (len(c.inputs()) - 1) * num_copies)
+        self.assertEqual(len(cu.outputs()), len(c.outputs()) * num_copies)
         self.assertSetEqual(cu.inputs(), clu.inputs() - set(key))
         self.assertSetEqual(cu.outputs(), clu.outputs())
         self.assertFalse(check_for_difference(cu, clu, key))

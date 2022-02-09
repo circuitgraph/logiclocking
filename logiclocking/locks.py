@@ -665,7 +665,6 @@ def tt_lock_sen(c, width, nsamples=10):
                         key = {f"key_{i}": model[n] for i, n in enumerate(startpoints)}
                         return key, startpoints, out
             b += 1
-            print(b)
 
     key, startpoints, out = find_input()
 

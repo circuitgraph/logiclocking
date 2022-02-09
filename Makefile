@@ -6,6 +6,7 @@ docs/index.html : logiclocking/* docs/templates/*
 	cp html/logiclocking/* docs
 
 test :
+	flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 	python3 -m unittest
 
 test_% :

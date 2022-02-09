@@ -100,7 +100,7 @@ class TestLocks(unittest.TestCase):
 
     def test_full_lock_avoid_loops(self):
         _, cl, _, _ = self.lock_test(
-            "c499", locks.full_lock, (8, 2), {"avoid_loops": True}
+            "c880", locks.full_lock, (8, 2), {"avoid_loops": True}
         )
         self.assertFalse(cl.is_cyclic())
 
