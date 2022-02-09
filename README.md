@@ -1,5 +1,7 @@
 # CircuitGraph LogicLocking
 
+[![Python package](https://github.com/cmu-actl/logiclocking/actions/workflows/python-package.yml/badge.svg)](https://github.com/cmu-actl/logiclocking/actions/workflows/python-package.yml)
+
 Implementations of various logic locks and attacks.
 
 ## Overview
@@ -23,7 +25,15 @@ write_key(k, "c880_locked_key.txt")
 ## Installing
 
 Logiclocking is not yet available on PyPi, so you must install locally.
+
+To run the miter attack or use `check_for_difference`, you must install python-sat
+
+`pip install python-sat`
+
 If you would like to use the Decision Tree Attack, you must also install sklearn.
+
+`pip install scikit-learn`
+
 
 ```shell
 cd <install location>
