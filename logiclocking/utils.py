@@ -26,29 +26,27 @@ def check_for_difference(oracle, locked_circuit, key):
             produced a difference.
     """
     m = miter(oracle, locked_circuit)
-    key = {f'c1_{k}': v for k, v in key.items()}
+    key = {f"c1_{k}": v for k, v in key.items()}
 
     live = sat(m, assumptions=key)
     if not live:
         return True
 
-    return sat(m, assumptions={'sat': True, **key})
+    return sat(m, assumptions={"sat": True, **key})
 
 
-def unroll(locked_circuit,
-           key,
-           num_unroll,
-           D="D",
-           Q="Q",
-           ignore_pins="CK",
-           initial_values=None):
+def unroll(
+    locked_circuit, key, num_unroll, D="D", Q="Q", ignore_pins="CK", initial_values=None
+):
     prefix = "cg_unroll"
-    locked_circuit_unrolled = cg.sequential_unroll(locked_circuit,
-                                                   num_unroll,
-                                                   D,
-                                                   Q,
-                                                   ignore_pins=ignore_pins,
-                                                   initial_values=initial_values)
+    locked_circuit_unrolled = cg.sequential_unroll(
+        locked_circuit,
+        num_unroll,
+        D,
+        Q,
+        ignore_pins=ignore_pins,
+        initial_values=initial_values,
+    )
     for k in key:
         iter_keys = [f"{k}_{prefix}_{i}" for i in range(num_unroll + 1)]
         locked_circuit_unrolled.set_type(iter_keys, "buf")
