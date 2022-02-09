@@ -8,7 +8,7 @@ from circuitgraph.transform import sensitivity_transform
 from circuitgraph import logic
 from pysat.solvers import Cadical
 from pysat.formula import IDPool
-from pysat.card import *
+from pysat.card import CardEnc
 
 
 def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
@@ -624,8 +624,7 @@ def tt_lock_sen(c, width, nsamples=10):
     # find output with large enough fanin
     potential_outs = [o for o in cl.outputs() if len(cl.startpoints(o)) >= width]
     if not potential_outs:
-        print("input with too small")
-        return None
+        raise ValueError(f"Not enough inputs to lock with width '{width}'")
 
     # find average sensitivities
     A = {}
@@ -658,7 +657,7 @@ def tt_lock_sen(c, width, nsamples=10):
                 us = cg.int_to_bin(upper, cg.clog2(N[o]))
                 ls = cg.int_to_bin(lower, cg.clog2(N[o]))
                 for sv in [us, ls]:
-                    model = sat(S[o], {f"out_{i}": v for i, v in enumerate(sv)})
+                    model = sat(S[o], {f"sen_out_{i}": v for i, v in enumerate(sv)})
                     if model:
                         out = o
                         startpoints = c.startpoints(o)
@@ -991,8 +990,8 @@ def full_lock(c, bw, lw, avoid_loops=False):
     # generate switch
     m = cg.strip_io(logic.mux(2))
     s = cg.Circuit(name="switch")
-    s.add_subcircuit(m, f"m0")
-    s.add_subcircuit(m, f"m1")
+    s.add_subcircuit(m, "m0")
+    s.add_subcircuit(m, "m1")
     s.add("in_0", "buf", fanout=["m0_in_0", "m1_in_1"])
     s.add("in_1", "buf", fanout=["m0_in_1", "m1_in_0"])
     s.add("out_0", "xor", fanin="m0_out")
@@ -1093,8 +1092,8 @@ def full_lock_mux(c, bw, lw):
     # generate switch
     m = cg.strip_io(logic.mux(2))
     s = cg.Circuit(name="switch")
-    s.add_subcircuit(m, f"m0")
-    s.add_subcircuit(m, f"m1")
+    s.add_subcircuit(m, "m0")
+    s.add_subcircuit(m, "m1")
     s.add("in_0", "buf", fanout=["m0_in_0", "m1_in_1"])
     s.add("in_1", "buf", fanout=["m0_in_1", "m1_in_0"])
     s.add("out_0", "xor", fanin="m0_out")
@@ -1180,7 +1179,7 @@ def full_lock_mux(c, bw, lw):
     return cl, key
 
 
-def inter_lock(c, bw):
+def inter_lock(c, bw, reduced_swb=False):
     """
     Locks a circuitgraph with InterLock as outlined in
     Kamali, Hadi Mardani, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
@@ -1195,6 +1194,10 @@ def inter_lock(c, bw):
     bw: int
             The size of the keyed rounting block. A bw of m results
             in an m x m sized KeyRB.
+    reduced_swb: bool
+            If True, each switchbox is reduced from 3 keys to 1 key due to the fact
+            that for 100% utilization, the other 2 keys will never be used. Essentially,
+            the muxes at the output of the switchbox are removed.
 
     Returns
     -------
@@ -1207,208 +1210,41 @@ def inter_lock(c, bw):
     # generate switch
     m = cg.strip_io(logic.mux(2))
     s = cg.Circuit(name="switch")
-    s.add_subcircuit(m, f"m0")
-    s.add_subcircuit(m, f"m1")
-    s.add_subcircuit(m, f"m2")
-    s.add_subcircuit(m, f"m3")
+    s.add_subcircuit(m, "m0")
+    s.add_subcircuit(m, "m1")
     s.add("in_0", "input", fanout=["m0_in_0", "m1_in_1"])
     s.add("in_1", "input", fanout=["m0_in_1", "m1_in_0"])
     s.add("ex_in_0", "input")
     s.add("ex_in_1", "input")
-    # f1 and f2 starts as and gates, must be updated later
-    s.add("f1_out", "and", fanin=["m0_out", "ex_in_0"], fanout="m2_in_0")
-    s.add("f2_out", "and", fanin=["m1_out", "ex_in_1"], fanout="m3_in_1")
-    s.connect("m0_out", "m3_in_0")
-    s.connect("m1_out", "m2_in_1")
-    s.add("key_0", "input", fanout=["m0_sel_0", "m1_sel_0"])
-    s.add("key_1", "input", fanout="m2_sel_0")
-    s.add("key_2", "input", fanout="m3_sel_0")
-    s.add("out_0", "buf", fanin="m2_out", output=True)
-    s.add("out_1", "buf", fanin="m3_out", output=True)
-
-    sbb = cg.BlackBox(
-        "switch",
-        ["in_0", "in_1", "ex_in_0", "ex_in_1", "key_0", "key_1", "key_2"],
-        ["out_0", "out_1"],
-    )
-
-    # Select paths to embed in the routing network
-    path_length = 2 * cg.clog2(bw) - 2
-    paths = []
-    locked_gates = set()
-
-    filtered_gates = set()
-
-    def filter_gate(n):
-        gate = n
-        gates = [n]
-        for _ in range(path_length):
-            # if (len(cl.fanin(gate)) != 2 or len(cl.fanout(gate)) == 0 or
-            if (
-                len(cl.fanin(gate)) != 2
-                or len(cl.fanout(gate)) != 1
-                or gate in filtered_gates
-                or len(cl.fanin(gate) & filtered_gates) > 0
-                or len(cl.fanout(gate) & filtered_gates) > 0
-            ):
-                return False
-            gate = cl.fanout(gate).pop()
-            gates.append(gate)
-        filtered_gates.update(gates)
-        for gate in gates:
-            filtered_gates.update(cl.fanin(gate))
-        return True
-
-    candidate_gates = filter(filter_gate, cl.nodes())
-    for _ in range(bw):
-        try:
-            gate = next(candidate_gates)
-        except StopIteration:
-            raise ValueError("Not enough candidate gates found for locking")
-        path = [gate]
-        for _ in range(path_length - 1):
-            gate = cl.fanout(gate).pop()
-            path.append(gate)
-        paths.append(path)
-
-    # generate banyan with J rows and I columns of SwBs
-    I = path_length
-    J = int(bw / 2)
-
-    for i in range(I * J):
-        cl.add_blackbox(sbb, f"swb_{i}")
-
-    # make connections
-    swb_ins = [f"swb_{i//2}.in_{i%2}" for i in range(I * J * 2)]
-    swb_outs = [f"swb_{i//2}.out_{i%2}" for i in range(I * J * 2)]
-    connect_banyan_bb(cl, swb_ins, swb_outs, bw)
-
-    # get banyan io
-    net_ins = swb_ins[:bw]
-    net_outs = swb_outs[-bw:]
-
-    # generate key
-    # In the example from the paper, the paths in a SWB directly from an
-    # input to an output are never used. Starting with that implemetation.
-    # Could sometimes choose paths less than `path_length` and use these
-    # connections with a decoy external input, but such a strategy is not
-    # discussed in the paper.
-    swaps = []
-    key = {}
-    for i in range(I * J):
-        swaps.append(choice([True, False]))
-        if swaps[-1]:
-            key[f"swb_{i}_key_0"] = True
-        else:
-            key[f"swb_{i}_key_0"] = False
-        key[f"swb_{i}_key_1"] = False
-        key[f"swb_{i}_key_2"] = True
-
-    f_gates = dict()
-
-    # Add paths to banyan
-    # Get a random intial ordering of paths
-    input_order = list(range(bw))
-    shuffle(input_order)
-    for i, p_idx in enumerate(input_order):
-        path = paths[p_idx]
-        swb_idx = i // 2
-        i_idx = i % 2
-        prev_node = cl.fanin(path[0]).pop()
-        cl.connect(prev_node, f"swb_{swb_idx}.in_{i_idx}")
-        for j, n in enumerate(path):
-            o_idx = i_idx ^ int(swaps[swb_idx])
-            ex_i = (cl.fanin(n) - {prev_node}).pop()
-            cl.connect(ex_i, f"swb_{swb_idx}.ex_in_{o_idx}")
-            f_gates[f"swb_{swb_idx}_f{o_idx+1}_out"] = cl.type(n)
-            if j != len(path) - 1:
-                next_n = cl.fanout(f"swb_{swb_idx}.out_{o_idx}").pop()
-                next_n = cl.fanout(next_n).pop()
-                swb_idx = int(next_n.split(".")[0].split("_")[-1])
-                i_idx = int(next_n.split(".")[-1].split("_")[-1])
-                prev_node = n
-            else:
-                for fo in cl.fanout(n):
-                    cl.disconnect(n, fo)
-                    try:
-                        conn = cl.fanout(f"swb_{swb_idx}.out_{o_idx}").pop()
-                    except KeyError:
-                        conn = cl.add(
-                            f"swb_{swb_idx}_out_{o_idx}_load",
-                            "buf",
-                            fanin=f"swb_{swb_idx}.out_{o_idx}",
-                        )
-                    cl.connect(conn, fo)
-
-    for path in paths:
-        for node in path:
-            cl.remove(node)
-
-    for i in range(I * J):
-        cl.fill_blackbox(f"swb_{i}", s)
-
-    for k, v in f_gates.items():
-        cl.set_type(k, v)
-
-    for k in key:
-        cl.set_type(k, "input")
-
-    cg.lint(cl)
-    return cl, key
-
-
-def inter_lock_reduced_swb(c, bw):
-    """
-    Locks a circuitgraph with InterLock as outlined in
-    Kamali, Hadi Mardani, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
-    "Interlock: An intercorrelated logic and routing locking."
-    In 2020 IEEE/ACM International Conference On Computer Aided Design (ICCAD),
-    pp. 1-9. IEEE, 2020.
-
-    However, each switchbox is reduced from 3 keys to 1 key due to the fact
-    that for 100% utilization, the other 2 keys will never be used. Essentially,
-    the muxes at the output of the switchbox are removed.
-
-    Parameters
-    ----------
-    circuit: circuitgraph.CircuitGraph
-            Circuit to lock.
-    bw: int
-            The size of the keyed rounting block. A bw of m results
-            in an m x m sized KeyRB.
-
-    Returns
-    -------
-    circuitgraph.CircuitGraph, dict of str:bool
-            the locked circuit and the correct key value for each key input
-    """
-    cl = cg.copy(c)
-    cg.lint(cl)
-
-    # generate switch
-    m = cg.strip_io(logic.mux(2))
-    s = cg.Circuit(name="switch")
-    s.add_subcircuit(m, f"m0")
-    s.add_subcircuit(m, f"m1")
-    s.add("in_0", "input", fanout=["m0_in_0", "m1_in_1"])
-    s.add("in_1", "input", fanout=["m0_in_1", "m1_in_0"])
-    s.add("ex_in_0", "input")
-    s.add("ex_in_1", "input")
-    # f1 and f2 starts as and gates, must be updated later
+    # f1 and f2 starts as 'and' gates, must be updated later
     s.add("f1_out", "and", fanin=["m0_out", "ex_in_0"])
     s.add("f2_out", "and", fanin=["m1_out", "ex_in_1"])
     s.add("key_0", "input", fanout=["m0_sel_0", "m1_sel_0"])
-    s.add("out_0", "buf", fanin="f1_out", output=True)
-    s.add("out_1", "buf", fanin="f2_out", output=True)
+    s.add("out_0", "buf", output=True)
+    s.add("out_1", "buf", output=True)
+    if not reduced_swb:
+        s.add_subcircuit(m, "m2")
+        s.add_subcircuit(m, "m3")
+        s.add("key_1", "input", fanout="m2_sel_0")
+        s.add("key_2", "input", fanout="m3_sel_0")
+        s.connect("f1_out", "m2_in_0")
+        s.connect("f2_out", "m3_in_1")
+        s.connect("m0_out", "m3_in_0")
+        s.connect("m1_out", "m2_in_1")
+        s.connect("m2_out", "out_0")
+        s.connect("m3_out", "out_1")
+    else:
+        s.connect("f1_out", "out_0")
+        s.connect("f2_out", "out_1")
 
-    sbb = cg.BlackBox(
-        "switch", ["in_0", "in_1", "ex_in_0", "ex_in_1", "key_0"], ["out_0", "out_1"]
-    )
+    sbb_inputs = ["in_0", "in_1", "ex_in_0", "ex_in_1", "key_0"]
+    if not reduced_swb:
+        sbb_inputs += ["key_1", "key_2"]
+    sbb = cg.BlackBox("switch", sbb_inputs, ["out_0", "out_1"],)
 
     # Select paths to embed in the routing network
     path_length = 2 * cg.clog2(bw) - 2
     paths = []
-    locked_gates = set()
 
     filtered_gates = set()
 
@@ -1416,10 +1252,10 @@ def inter_lock_reduced_swb(c, bw):
         gate = n
         gates = [n]
         for _ in range(path_length):
-            # if (len(cl.fanin(gate)) != 2 or len(cl.fanout(gate)) == 0 or
             if (
                 len(cl.fanin(gate)) != 2
                 or len(cl.fanout(gate)) != 1
+                or cl.is_output(gate)
                 or gate in filtered_gates
                 or len(cl.fanin(gate) & filtered_gates) > 0
                 or len(cl.fanout(gate) & filtered_gates) > 0
@@ -1456,10 +1292,6 @@ def inter_lock_reduced_swb(c, bw):
     swb_outs = [f"swb_{i//2}.out_{i%2}" for i in range(I * J * 2)]
     connect_banyan_bb(cl, swb_ins, swb_outs, bw)
 
-    # get banyan io
-    net_ins = swb_ins[:bw]
-    net_outs = swb_outs[-bw:]
-
     # generate key
     # In the example from the paper, the paths in a SWB directly from an
     # input to an output are never used. Starting with that implemetation.
@@ -1474,6 +1306,9 @@ def inter_lock_reduced_swb(c, bw):
             key[f"swb_{i}_key_0"] = True
         else:
             key[f"swb_{i}_key_0"] = False
+        if not reduced_swb:
+            key[f"swb_{i}_key_1"] = False
+            key[f"swb_{i}_key_2"] = True
 
     f_gates = dict()
 
@@ -1555,11 +1390,11 @@ def lebl(c, bw, ng):
     # generate switch and mux
     s = cg.Circuit(name="switch")
     m2 = cg.strip_io(logic.mux(2))
-    s.add_subcircuit(m2, f"m2_0")
-    s.add_subcircuit(m2, f"m2_1")
+    s.add_subcircuit(m2, "m2_0")
+    s.add_subcircuit(m2, "m2_1")
     m4 = cg.strip_io(logic.mux(4))
-    s.add_subcircuit(m4, f"m4_0")
-    s.add_subcircuit(m4, f"m4_1")
+    s.add_subcircuit(m4, "m4_0")
+    s.add_subcircuit(m4, "m4_1")
     s.add("in_0", "buf", fanout=["m2_0_in_0", "m2_1_in_1"])
     s.add("in_1", "buf", fanout=["m2_0_in_1", "m2_1_in_0"])
     s.add("out_0", "buf", fanin="m4_0_out")
@@ -1686,10 +1521,7 @@ def lebl(c, bw, ng):
     # solve
     solver = Cadical(bootstrap_with=clauses)
     if not solver.solve():
-        print(f"no config for width: {bw}")
-        core = solver.get_core()
-        print(core)
-        code.interact(local=dict(globals(), **locals()))
+        raise ValueError(f"No config for width '{bw}'")
     model = solver.get_model()
 
     # get mapping
@@ -1697,8 +1529,7 @@ def lebl(c, bw, ng):
     for bn in swb_outs + net_ins:
         selected_gates = [cn for cn in c if model[net_map.id(f"m_{bn}_{cn}") - 1] > 0]
         if len(selected_gates) > 1:
-            print(f"multiple gates mapped to: {bn}")
-            code.interact(local=dict(globals(), **locals()))
+            raise ValueError(f"Multiple gates mapped to '{bn}'")
         mapping[bn] = selected_gates[0] if selected_gates else None
 
     potential_net_fanins = list(
@@ -1738,7 +1569,8 @@ def lebl(c, bw, ng):
         # connect inner nodes
         mux_gate_types = set()
 
-        # constant output, hookup to a node that is already in the affected outputs fanin, not in others
+        # constant output, hookup to a node that is already in the affected outputs
+        # fanin, not in others
         if not mapping[bn] and bn in net_outs:
             decoy_fanout_gate = choice(potential_net_fanouts)
             # selected_fo[bn] = decoy_fanout_gate
@@ -1764,8 +1596,7 @@ def lebl(c, bw, ng):
                 cl.set_type(mux_input, cl.type(decoy_fanout_gate))
                 cl.set_type(decoy_fanout_gate, "buf")
             else:
-                print("gate error")
-                code.interact(local=dict(globals(), **locals()))
+                raise ValueError(f"Invalid gate type '{cl.type(decoy_fanout_gate)}'")
             cl.connect(bn, decoy_fanout_gate)
             mux_gate_types.add(cl.type(mux_input))
 
@@ -1869,182 +1700,3 @@ def lebl(c, bw, ng):
 
     cg.lint(cl)
     return cl, key
-
-
-def uc_gate(w_gate):
-    # LUT + input muxes
-    g = cg.Circuit()
-
-    # add mux that will function as LUT
-    l = cg.mux(4)
-    g.add_subcircuit(l, "lut")
-
-    # add input muxes
-    m = cg.mux(w_gate)
-    g.add_subcircuit(m, f"mux0")
-    g.connect("mux0_out", "lut_sel_0")
-    g.add_subcircuit(m, f"mux1")
-    g.connect("mux1_out", "lut_sel_1")
-
-    # connect inputs to muxes
-    for i in range(w_gate):
-        g.add(f"in_{i}", "input", fanout=[f"mux0_in_{i}", f"mux1_in_{i}"])
-
-    # connect keys to muxes
-    for i in range(cg.clog2(w_gate)):
-        g.add(f"key_sel_0_{i}", "input", fanout=f"mux0_sel_{i}")
-        g.add(f"key_sel_1_{i}", "input", fanout=f"mux1_sel_{i}")
-
-    # connect keys to lut
-    for i in range(4):
-        g.add(f"key_lut_{i}", "input", fanout=f"lut_in_{i}")
-
-    # add output
-    g.add("out", "output", fanin="lut_out")
-    return g
-
-
-def gen_uc(n, m, w, d):
-    uc = cg.Circuit()
-
-    # initialize possible gate inputs as UC inputs
-    gate_inputs = [uc.add(f"in_{i}", "input") for i in range(n)]
-
-    # generate uc gates for each x,y location
-    for x in range(1, d + 1):
-        # uc gate input width is length of inputs+all previous layer outputs
-        g = uc_gate(n + (x - 1) * w)
-        for y in range(w):
-            # add gate copy
-            uc.add_subcircuit(g, f"uc_gate_{x}_{y}")
-            # connect all inputs
-            for i, gi in enumerate(gate_inputs):
-                uc.connect(gi, f"uc_gate_{x}_{y}_in_{i}")
-
-        # add layer x outputs to possible gate inputs
-        gate_inputs += [f"uc_gate_{x}_{y}_out" for y in range(w)]
-
-    # make keys from uc_gates as primary inputs
-    key = {n for n in uc if "key" in n}
-    for k in key:
-        uc.set_type(k, "input")
-
-    # connect output muxes
-    mx = cg.mux(len(gate_inputs))
-    for o in range(m):
-        # add mux
-        uc.add_subcircuit(mx, f"output_mux_{o}")
-        # connect inputs
-        for i, gi in enumerate(gate_inputs):
-            uc.connect(gi, f"output_mux_{o}_in_{i}")
-        # connect output
-        uc.add(f"out_{o}", "output", fanin=f"output_mux_{o}_out")
-        # connect keys
-        for i in range(cg.clog2(len(gate_inputs))):
-            uc.add(
-                f"key_output_mux_{o}_sel_{i}", "input", fanout=f"output_mux_{o}_sel_{i}"
-            )
-    return uc
-
-
-def uc_lock(c):
-    """
-    Locks a circuitgraph with a universal circuit.
-
-    Parameters
-    ----------
-    c: circuitgraph.CircuitGraph
-            Circuit to lock.
-
-    Returns
-    -------
-    circuitgraph.CircuitGraph, dict of str:bool
-            the locked circuit and the correct key value for each key input
-    """
-
-    # convert to 2 input gates
-    c2 = cg.limit_fanin(c, 2)
-
-    # determine node layers
-    layers = {}  # x coordinate of gate
-    for n in c2.topo_sort():
-        if c2.type(n) == "output":
-            continue
-        fi = c2.fanin(n)
-        if fi:
-            layers[n] = max(layers[f] for f in fi) + 1
-        else:
-            layers[n] = 0
-    out_layer = max(layers.values()) + 1
-    for n in c2.outputs():
-        layers[n] = out_layer
-
-    # determine width, assign gate locations
-    layer_counts = {}  # how many gates on layer
-    layer_orders = {}  # y coordinate of gate
-    for g, l in layers.items():
-        if l not in layer_counts:
-            layer_counts[l] = 1
-        else:
-            layer_counts[l] += 1
-        layer_orders[g] = layer_counts[l] - 1
-    w = max(layer_counts.values())  # width
-    d = len(layer_counts) - 1  # doesn't include input layer
-    n = len(c2.inputs())  # number of inputs
-    m = len(c2.outputs())  # number of outputs
-
-    # create UC
-    uc = gen_uc(n, m, w, d)
-    key = {n: False for n in uc if "key" in n}  # set all to 0
-
-    # table for lut programming
-    lut_vals = {
-        "buf": [False, True, False, True],
-        "not": [True, False, True, False],
-        "xor": [False, True, True, False],
-        "xnor": [True, False, False, True],
-        "and": [False, False, False, True],
-        "nand": [True, True, True, False],
-        "nor": [True, False, False, False],
-        "or": [False, True, True, True],
-    }
-
-    # program
-    for node in c2:
-        x = layers[node]
-        y = layer_orders[node]
-
-        if c2.type(node) == "output":
-            # set mux keys
-            fi = c2.fanin(node).pop()
-            fi_y = layer_orders[fi]
-            fi_x = layers[fi]
-            i = fi_x * w + fi_y
-
-            x_out = max(layers.values())  # last layer
-            w_out_gate = cg.clog2(n + (x_out) * w)
-            for i, v in enumerate(cg.int_to_bin(i, w_out_gate, lend=True)):
-                key[f"key_output_mux_{y}_sel_{i}"] = v
-
-            # rename out
-            uc.relabel({f"out_{y}": node})
-
-        elif c2.type(node) == "input":
-            # rename to original circuit input names
-            uc.relabel({f"in_{y}": node})
-
-        else:
-            # add lut vals
-            for i, v in enumerate(lut_vals[c2.type(node)]):
-                key[f"uc_gate_{x}_{y}_key_lut_{i}"] = v
-
-            # set mux keys to select fanin
-            w_uc_gate = cg.clog2(n + (x - 1) * w)  # should be n for x=1
-            for fi_i, fi in enumerate(c2.fanin(node)):
-                fi_x = layers[fi]
-                fi_y = layer_orders[fi]
-                i = fi_x * w + fi_y
-                for i, v in enumerate(cg.int_to_bin(i, w_uc_gate, lend=True)):
-                    key[f"uc_gate_{x}_{y}_key_sel_{fi_i}_{i}"] = v
-
-    return uc, key

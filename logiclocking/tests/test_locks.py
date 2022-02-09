@@ -1,4 +1,5 @@
 import unittest
+import random
 
 import circuitgraph as cg
 from logiclocking import locks
@@ -6,154 +7,117 @@ from logiclocking.utils import check_for_difference
 
 
 class TestLocks(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.c17 = cg.from_lib("c17_gates")
-        cls.s27 = cg.from_lib("s27")
-        cls.c499 = cg.from_lib("c499")
-        cls.c432 = cg.from_lib("c432")
-        cls.c880 = cg.from_lib("c880")
-        cls.c6288 = cg.from_lib("c6288")
+    def lock_test(
+        self,
+        circuit_name,
+        lock_fn,
+        lock_args=(),
+        lock_kwargs={},
+        wrong_key_inputs="half",
+    ):
+        c = cg.from_lib(circuit_name)
+        cl, key = lock_fn(c, *lock_args, **lock_kwargs)
+        cg.lint(cl)
+        self.assertSetEqual(c.outputs(), cl.outputs())
+        self.assertSetEqual(c.inputs(), cl.inputs() - set(key))
+        self.assertSetEqual(cl.inputs() - c.inputs(), set(key))
+        self.assertFalse(check_for_difference(c, cl, key))
+
+        wrong_key = key.copy()
+        if wrong_key_inputs == "one":
+            inverted_key_input = random.choice(list(key))
+            wrong_key[inverted_key_input] = not wrong_key[inverted_key_input]
+        elif wrong_key_inputs == "half":
+            for inverted_key_input in random.sample(list(key), len(key) // 2):
+                wrong_key[inverted_key_input] = not wrong_key[inverted_key_input]
+        elif wrong_key_inputs == "all":
+            wrong_key = {k: not v for k, v in key.items()}
+        else:
+            raise ValueError(f"Unkown 'wrong_key_inputs' value: '{wrong_key_inputs}'")
+        self.assertTrue(check_for_difference(c, cl, wrong_key))
+        return c, cl, key, wrong_key
 
     def test_trll(self):
-        c = self.c880
-        cl, key = locks.trll(c, 32)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c880", locks.trll, (32,))
 
     def test_xor_lock(self):
-        c = self.c17
-        cl, key = locks.xor_lock(c, 9)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c880", locks.xor_lock, (32,))
 
     def test_mux_lock(self):
-        c = self.c17
-        cl, key = locks.mux_lock(c, 9)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c880", locks.mux_lock, (32,))
 
     def test_mux_lock_avoid_loops(self):
-        c = self.c880
-        cl, key = locks.mux_lock(c, 32, avoid_loops=True)
+        _, cl, _, _ = self.lock_test(
+            "c880", locks.mux_lock, (32,), {"avoid_loops": True}
+        )
         self.assertFalse(cl.is_cyclic())
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
 
     def test_random_lut_lock(self):
-        c = self.c17
-        cl, key = locks.random_lut_lock(c, 2, 2)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c880", locks.random_lut_lock, (8, 4))
 
     def test_lut_lock(self):
-        c = self.c17
+        self.lock_test("c5315", locks.lut_lock, (100,))
+
+    def test_lut_lock_not_enough_gates(self):
+        c = cg.from_lib("c17")
         with self.assertRaises(ValueError):
             locks.lut_lock(c, 100)
-        c = cg.from_lib("c5315")
-        cl, key = locks.lut_lock(c, 100)
-        self.assertSetEqual(c.outputs(), cl.outputs())
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
-
-    def test_sfll_hd(self):
-        c = self.c499
-        cl, key = locks.sfll_hd(c, 16, 4)
-        self.assertSetEqual(c.outputs(), cl.outputs())
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
 
     def test_tt_lock(self):
-        c = self.c17
-        cl, key = locks.tt_lock(c, 4)
-        self.assertSetEqual(c.outputs(), cl.outputs())
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c880", locks.tt_lock, (16,))
 
-    @unittest.skip("FIXME")
+    def test_tt_lock_not_enough_inputs(self):
+        c = cg.from_lib("c17")
+        with self.assertRaises(ValueError):
+            locks.tt_lock(c, len(c.inputs()) + 1)
+
     def test_tt_lock_sen(self):
-        c = self.c17
-        cl, key = locks.tt_lock_sen(c, 4)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c880", locks.tt_lock_sen, (8,))
+
+    def test_tt_lock_sen_not_enough_inputs(self):
+        c = cg.from_lib("c17")
+        with self.assertRaises(ValueError):
+            locks.tt_lock_sen(c, len(c.inputs()) + 1)
+
+    def test_sfll_hd(self):
+        self.lock_test("c880", locks.sfll_hd, (16, 4))
+
+    def test_sfll_hd_not_enough_inputs(self):
+        c = cg.from_lib("c17")
+        with self.assertRaises(ValueError):
+            locks.sfll_hd(c, len(c.inputs()) + 1, 4)
 
     def test_sfll_flex(self):
-        c = self.c17
-        cl, key = locks.sfll_flex(c, 4, 2)
-        self.assertSetEqual(c.outputs(), cl.outputs())
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: v for k, v in key.items()}
-        wkey["key_0"] = not wkey["key_0"]
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c880", locks.sfll_flex, (16, 4))
+
+    def test_sfll_flex_not_enough_inputs(self):
+        c = cg.from_lib("c17")
+        with self.assertRaises(ValueError):
+            locks.sfll_flex(c, len(c.inputs()) + 1, 4)
 
     def test_full_lock(self):
-        c = self.c17
-        cl, key = locks.full_lock(c, 8, 2)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c499", locks.full_lock, (16, 2))
 
     def test_full_lock_avoid_loops(self):
-        c = self.c880
-        cl, key = locks.full_lock(c, 8, 2, avoid_loops=True)
+        _, cl, _, _ = self.lock_test(
+            "c499", locks.full_lock, (8, 2), {"avoid_loops": True}
+        )
         self.assertFalse(cl.is_cyclic())
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
 
     def test_full_lock_mux(self):
-        c = self.c17
-        cl, key = locks.full_lock_mux(c, 8, 2)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c499", locks.full_lock_mux, (16, 2))
 
     def test_inter_lock(self):
-        c = cg.from_lib("c7552g")
-        cl, key = locks.inter_lock(c, 8)
-        cg.lint(cl)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
-
-    def test_inter_lock_itc(self):
-        c = cg.from_lib("b22_Cg")
-        cl, key = locks.inter_lock(c, 16)
-        cg.lint(cl)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        bw = 8
+        _, _, k, _ = self.lock_test("c7552g", locks.inter_lock, (bw,))
+        self.assertEqual(len(k), 4 * bw // 2 * 3)
 
     def test_inter_lock_reduced_swb(self):
-        c = cg.from_lib("c7552g")
-        cl, key = locks.inter_lock_reduced_swb(c, 8)
-        cg.lint(cl)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        bw = 8
+        _, _, k, _ = self.lock_test(
+            "c7552g", locks.inter_lock, (bw,), {"reduced_swb": True}
+        )
+        self.assertEqual(len(k), 4 * bw // 2)
 
     def test_lebl(self):
-        c = self.c432
-        cl, key = locks.lebl(c, 8, 8)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
-
-    @unittest.skip("FIXME")
-    def test_uc_lock(self):
-        uc = locks.gen_uc(5, 5, 3, 3)
-        cg.lint(uc)
-        c = self.c17
-        cl, key = locks.uc_lock(c)
-        self.assertFalse(check_for_difference(c, cl, key))
-        wkey = {k: not v for k, v in key.items()}
-        self.assertTrue(check_for_difference(c, cl, wkey))
+        self.lock_test("c432", locks.lebl, (8, 8))
