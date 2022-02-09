@@ -25,6 +25,13 @@ write_key(k, "c880_locked_key.txt")
 ## Installing
 
 Logiclocking is not yet available on PyPi, so you must install locally.
+For this internal fork of logiclocking, you must also have the internal version of circuitgraph installed. Do this BEFORE installing logiclocking
+```shell
+cd <install location>
+git clone https://github.com/cmu-actl/circuitgraph.git
+cd circuitgraph
+pip install -e .
+```
 
 To run the miter attack or use `check_for_difference`, you must install python-sat
 
@@ -39,6 +46,5 @@ If you would like to use the Decision Tree Attack, you must also install sklearn
 cd <install location>
 git clone https://github.com/circuitgraph/logiclocking.git
 cd logiclocking
-pip install -r requirements.txt
 pip install -e .
 ```
