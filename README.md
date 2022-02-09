@@ -1,5 +1,7 @@
 # CircuitGraph LogicLocking
 
+[![Python package](https://github.com/cmu-actl/logiclocking/actions/workflows/python-package.yml/badge.svg)](https://github.com/cmu-actl/logiclocking/actions/workflows/python-package.yml)
+
 Implementations of various logic locks and attacks.
 
 ## Overview
