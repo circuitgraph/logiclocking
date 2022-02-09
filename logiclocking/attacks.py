@@ -4,9 +4,7 @@ import random
 
 import circuitgraph as cg
 from circuitgraph.sat import sat, construct_solver, cnf, remap
-from circuitgraph.transform import miter
-
-from logiclocking import acyclic_unroll
+from circuitgraph.transform import miter, acyclic_unroll
 
 
 def _localtime():

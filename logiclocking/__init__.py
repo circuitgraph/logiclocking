@@ -6,7 +6,6 @@ logic locking techniques using the `circuitgraph` package.
 from logiclocking.utils import (
     check_for_difference,
     unroll,
-    acyclic_unroll,
     read_key,
     write_key,
 )
