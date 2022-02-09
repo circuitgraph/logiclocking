@@ -1,8 +1,6 @@
-# CircuitGraph Logic Locking
+# CircuitGraph LogicLocking
 
-Locking circuits with various logic locking techniques.
-
-[![Build Status](https://app.travis-ci.com/circuitgraph/logiclocking.svg?token=iNbNxbyCMbSysAQsDskF&branch=master)](https://app.travis-ci.com/github/circuitgraph/logiclocking)
+Implementations of various logic locks and attacks.
 
 ## Overview
 
@@ -12,20 +10,20 @@ Here's a simple example of locking a basic benchmark circuit. The circuit to loc
 
 ```python
 import circuitgraph as cg
-from logiclocking import locks
+from logiclocking import locks, write_key
 
-c = cg.from_lib('c880')
+c = cg.from_lib("c880")
 num_keys = 32
 cl, k = locks.xor_lock(c, num_keys)
 
-cg.to_file(cl, 'c880_locked.v')
-with open('c880_locked.key', 'w') as f:
-    f.write(f'{k}\n')
+cg.to_file(cl, "c880_locked.v")
+write_key(k, "c880_locked_key.txt")
 ```
 
 ## Installing
 
 Logiclocking is not yet available on PyPi, so you must install locally.
+If you would like to use the Decision Tree Attack, you must also install sklearn.
 
 ```shell
 cd <install location>

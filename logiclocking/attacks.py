@@ -1,47 +1,16 @@
-from time import time
+import time
 import code
 import random
-from itertools import product
 
-import networkx as nx
-from networkx.exception import NetworkXNoCycle
-from circuitgraph.sat import sat, construct_solver, cnf, remap
-from circuitgraph.circuit import Circuit
-from circuitgraph.transform import miter
 import circuitgraph as cg
-from sklearn.tree import DecisionTreeClassifier
+from circuitgraph.sat import sat, construct_solver, cnf, remap
+from circuitgraph.transform import miter
+
+from logiclocking import acyclic_unroll
 
 
-def decision_tree_attack(cl, key, nsamples):
-
-    # setup vars
-    keys = tuple(key.keys())
-    ins = tuple(cl.startpoints() - key.keys())
-    outs = tuple(cl.endpoints())
-
-    # generate training samples
-    x = []
-    y = {o: [] for o in outs}
-    for i in range(nsamples):
-        x += [[random.choice((True, False)) for i in ins]]
-        result = sat(cl, {**{i: v for i, v in zip(ins, x[-1])}, **key})
-        for o in outs:
-            y[o] += [result[o]]
-
-    estimators = {o: DecisionTreeClassifier() for o in outs}
-    for o in outs:
-        estimators[o].fit(x, y[o])
-
-    # test accuracy
-    ncorrect = 0
-    for i in range(nsamples):
-        x = [[random.choice((True, False)) for i in ins]]
-        result = sat(cl, {**{i: v for i, v in zip(ins, x[-1])}, **key})
-        if all(result[o] == estimators[o].predict(x) for o in outs):
-            ncorrect += 1
-
-    print(ncorrect / nsamples)
-    return estimators
+def _localtime():
+    return time.asctime(time.localtime(time.time()))
 
 
 def miter_attack(
@@ -70,14 +39,25 @@ def miter_attack(
     unroll_cyclic: bool
             If True, convert cyclic circuits to acyclic versions
     verbose: bool
-            If False, information on the attack will not be printed
+            If True, attack progress will be printed
     code_on_error: bool
             If True, drop into an interactive session on an error
-    """
-    start_time = time()
 
-    if unroll_cyclic and cl.is_cyclic():
-        cl = acyclic_unroll(cl)
+    Returns
+    -------
+    dict
+            A dictionary containing attack info and results
+    """
+    start_time = time.time()
+
+    if cl.is_cyclic():
+        if unroll_cyclic:
+            cl = acyclic_unroll(cl)
+        else:
+            raise ValueError(
+                "Circuit is cyclic. Set 'unroll_cyclic' to True to run sat on "
+                "this circuit"
+            )
 
     # setup vars
     keys = tuple(key.keys())
@@ -93,11 +73,14 @@ def miter_attack(
 
     # add key constraints
     if key_cons:
-        if isinstance(key_cons, Circuit):
+        if isinstance(key_cons, cg.Circuit):
             key_cons = [key_cons]
         for key_con in key_cons:
             if verbose:
-                print(f"circuit: {cl.name}, adding constraints: {key_con.name}")
+                print(
+                    f"[{_localtime()}] circuit: {cl.name}, "
+                    f"adding constraints: {key_con.name}"
+                )
             formula, v_cons = cnf(key_con)
             con_clauses = formula.clauses
 
@@ -141,21 +124,11 @@ def miter_attack(
         model = s_miter.get_model()
         di = [model[v_miter.id(n) - 1] > 0 for n in ins]
         if tuple(di) in dis:
-            if verbose:
-                print("error di")
             if code_on_error:
+                print("Error di")
                 code.interact(local=dict(globals(), **locals()))
-            return {
-                "Time": None,
-                "Iterations": len(dis),
-                "Timeout": False,
-                "Equivalent": False,
-                "Key Found": False,
-                "dis": dis,
-                "dos": dos,
-                "iter_times": iter_times,
-                "iter_keys": iter_keys,
-            }
+            else:
+                raise ValueError("Saw same di twice")
 
         # get intermediate keys
         k0 = {n: model[v_miter.id(f"c0_{n}") - 1] > 0 for n in keys}
@@ -167,14 +140,14 @@ def miter_attack(
         model = s_sim.get_model()
         if model is None:
             if code_on_error:
-                print("error sim")
+                print("Error sim")
                 code.interact(local=dict(globals(), **locals()))
             else:
                 raise ValueError("Could not get simulation model")
         do = [model[v_sim.id(n) - 1] > 0 for n in outs]
         dis.append(tuple(di))
         dos.append(tuple(do))
-        iter_times.append(time() - start_time)
+        iter_times.append(time.time() - start_time)
 
         # add constraints circuits
         c0_offset = s_miter.nof_vars()
@@ -201,8 +174,8 @@ def miter_attack(
         s_miter.append_formula(key_clauses)
 
         # check timeout
-        if timeout and (time() - start_time) > timeout:
-            print(f"circuit: {cl.name}, Timeout: True")
+        if timeout and (time.time() - start_time) > timeout:
+            print(f"[{_localtime()}] circuit: {cl.name}, Timeout: True")
             return {
                 "Time": None,
                 "Iterations": len(dis),
@@ -217,8 +190,9 @@ def miter_attack(
 
         if verbose:
             print(
+                f"[{_localtime()}] "
                 f"circuit: {cl.name}, iter: {len(dis)}, "
-                f"time: {time()-start_time}, "
+                f"time: {time.time()-start_time}, "
                 f"clauses: {s_miter.nof_clauses()}, "
                 f"vars: {s_miter.nof_vars()}"
             )
@@ -226,7 +200,7 @@ def miter_attack(
     # check if a satisfying key remains
     key_found = s_miter.solve()
     if verbose:
-        print(f"circuit: {cl.name}, key found: {key_found}")
+        print(f"[{_localtime()}] circuit: {cl.name}, key found: {key_found}")
     if not key_found:
         return {
             "Time": None,
@@ -252,11 +226,11 @@ def miter_attack(
     }
     equivalent = not sat(m, assumptions)
     if verbose:
-        print(f"circuit: {cl.name}, equivalent: {equivalent}")
+        print(f"[{_localtime()}] circuit: {cl.name}, equivalent: {equivalent}")
 
-    exec_time = time() - start_time
+    exec_time = time.time() - start_time
     if verbose:
-        print(f"circuit: {cl.name}, elasped time: {exec_time}")
+        print(f"[{_localtime()}] circuit: {cl.name}, elasped time: {exec_time}")
 
     return {
         "Time": exec_time,
@@ -272,239 +246,71 @@ def miter_attack(
     }
 
 
-def acyclic_unroll(c):
+def decision_tree_attack(c_or_cl, nsamples, key=None, verbose=True):
+    """
+    Launch a decision tree attack on a locked circuit.
+    Attempts to capture the functionality of the oracle circuit
+    using a decision tree.
 
-    if c.blackboxes:
-        raise ValueError("remove blackboxes")
+    Paramters
+    ---------
+    c_or_cl: circuitgraph.Circuit
+            The circuit to reverse engineer. Can either be
+            the oracle or the locked circuit. If the locked
+            circuit, must pass in the correct key using
+            the `key` parameter
+    nsamples: int
+            The number of samples to train the decision tree on
+    key: dict of str:bool
+            The correct key, used to construct the oracle if
+            the locked circuit is given.
+    verbose: bool
+            If True, attack progress will be printed
 
-    # find feedback nodes
-    feedback = set([e[0] for e in approx_min_fas(c.graph)])
+    Returns
+    -------
+    dict of str:sklearn.tree.DecisionTreeClassifier
+            The trained classifier for each output.
+    """
+    from sklearn.tree import DecisionTreeClassifier
 
-    # get startpoints
-    sp = c.startpoints()
-
-    # create acyclic circuit
-    acyc = Circuit(name=f"acyc_{c.name}")
-    for n in sp:
-        acyc.add(n, "input")
-
-    # create copy with broken feedback
-    c_cut = cg.copy(c)
-    for f in feedback:
-        fanout = c.fanout(f)
-        c_cut.disconnect(f, fanout)
-        c_cut.add(f"aux_in_{f}", "buf", fanout=fanout)
-    c_cut.set_type(c.outputs(), "buf")
-
-    # cut feedback
-    for i in range(len(feedback) + 1):
-        # instantiate copy
-        acyc.add_subcircuit(c_cut, f"c{i}", {n: n for n in sp})
-
-        if i > 0:
-            # connect to last
-            for f in feedback:
-                acyc.connect(f"c{i-1}_{f}", f"c{i}_aux_in_{f}")
-        else:
-            # make feedback inputs
-            for f in feedback:
-                acyc.set_type(f"c{i}_aux_in_{f}", "input")
-
-    # connect outputs
-    for o in c.outputs():
-        acyc.add(o, "output", fanin=f"c{i}_{o}")
-
-    cg.lint(acyc)
-    if acyc.is_cyclic():
-        raise ValueError("circuit still cyclic")
-    return acyc
-
-
-def approx_min_fas(DG):
-    DGC = DG.copy()
-    s1, s2 = [], []
-    while DGC.nodes:
-        # find sinks
-        sinks = [n for n in DGC.nodes if DGC.out_degree(n) == 0]
-        while sinks:
-            s2 += sinks
-            DGC.remove_nodes_from(sinks)
-            sinks = [n for n in DGC.nodes if DGC.out_degree(n) == 0]
-
-        # find sources
-        sources = [n for n in DGC.nodes if DGC.in_degree(n) == 0]
-        while sources:
-            s1 += sources
-            DGC.remove_nodes_from(sources)
-            sources = [n for n in DGC.nodes if DGC.in_degree(n) == 0]
-
-        # choose max in/out degree difference
-        if DGC.nodes:
-            n = max(DGC.nodes, key=lambda x: DGC.out_degree(x) - DGC.in_degree(x))
-            s1.append(n)
-            DGC.remove_node(n)
-
-    ordering = s1 + list(reversed(s2))
-    feedback_edges = [
-        e for e in DG.edges if ordering.index(e[0]) > ordering.index(e[1])
-    ]
-    feedback_edges = [(u, v) for u, v in feedback_edges if u in nx.descendants(DG, v)]
-
-    DGC = DG.copy()
-    DGC.remove_edges_from(feedback_edges)
-    try:
-        if nx.find_cycle(DGC):
-            print("cyclic")
-            code.interact(local=dict(globals(), **locals()))
-    except NetworkXNoCycle:
-        pass
-
-    return feedback_edges
-
-
-def acyclic(cl, keys):
-    # find feedback nodes
-    feedback = set([e[0] for e in approx_min_fas(cl.graph)])
-
-    acyc = cg.Circuit(name="acyc")
-    acyc.add("sat", "output")
-    acyc.add("conj", "and", fanout="sat")
-    for n in keys:
-        acyc.add(n, "input")
-
-    for i, f in enumerate(feedback):
-        feedback_nodes = (cl.transitive_fanout(f) & cl.transitive_fanin(f)) | set([f])
-
-        # add path broken nodes
-        for d in feedback_nodes:
-            acyc.add(f"f{f}_d{d}", "or")
-
-        # connect
-        for d in feedback_nodes:
-            # break here or upstream
-            if d == f:
-                acyc.connect(f"f{f}_d{d}", "conj")
-            if f in set(cl.fanin(d)):
-                # can't break upstream
-                acyc.add(f"f{f}_u{d}", "0", fanout=f"f{f}_d{d}")
-            else:
-                # all upstream paths are broken
-                acyc.add(f"f{f}_u{d}", "and", fanout=f"f{f}_d{d}")
-                if not set(cl.fanin(d)) & feedback_nodes:
-                    code.interact(local=dict(globals(), **locals()))
-                for p in set(cl.fanin(d)) & feedback_nodes:
-                    acyc.connect(f"f{f}_d{p}", f"f{f}_u{d}")
-
-            # add controlling inputs
-            if (
-                cl.type(d) in ("xnor", "xor", "buf", "not")
-                or not cl.fanin(d) - feedback_nodes
-            ):
-                # can't break here
-                acyc.add(f"f{f}_h{d}", "0", fanout=f"f{f}_d{d}")
-
-            elif cl.type(d) in ("nor", "or"):
-                acyc.add(f"f{f}_h{d}", "or", fanout=f"f{f}_d{d}")
-                for p in cl.fanin(d) - feedback_nodes:
-                    control(cl, acyc, p, 1, f, keys)
-                    acyc.connect(f"f{f}_c{p}_v1", f"f{f}_h{d}")
-
-            elif cl.type(d) in ("nand", "and"):
-                acyc.add(f"f{f}_h{d}", "or", fanout=f"f{f}_d{d}")
-                for p in cl.fanin(d) - feedback_nodes:
-                    control(cl, acyc, p, 0, f, keys)
-                    acyc.connect(f"f{f}_c{p}_v0", f"f{f}_h{d}")
-
-            else:
-                print("huh")
-                code.interact(local=dict(globals(), **locals()))
-
-    # check all types are set
-    try:
-        cg.lint(acyc)
-    except:
-        import code
-
-        code.interact(local=dict(globals(), **locals()))
-    if not cg.sat(acyc, {"sat": True}):
-        print("no satisfying key")
-        import code
-
-        code.interact(local=dict(globals(), **locals()))
-
-    return acyc
-
-
-def control(cl, acyc, n, v, f, keys):
-    if f"f{f}_c{n}_v{v}" in acyc:
-        pass
-    elif n == f:
-        acyc.add(f"f{f}_c{n}_v{v}", "0")
-    elif cl.type(n) == "input":
-        if n in keys:
-            acyc.add(f"f{f}_c{n}_v{v}", "buf" if v else "not")
-            acyc.connect(n, f"f{f}_c{n}_v{v}")
-        else:
-            acyc.add(f"f{f}_c{n}_v{v}", "0")
-
-    elif cl.type(n) == "buf":
-        p = list(cl.fanin(n))[0]
-        acyc.add(f"f{f}_c{n}_v{v}", "buf")
-        control(cl, acyc, p, v, f, keys)
-        acyc.connect(f"f{f}_c{p}_v{v}", f"f{f}_c{n}_v{v}")
-
-    elif cl.type(n) == "not":
-        p = list(cl.fanin(n))[0]
-        acyc.add(f"f{f}_c{n}_v{v}", "buf")
-        control(cl, acyc, p, 1 - v, f, keys)
-        acyc.connect(f"f{f}_c{p}_v{1-v}", f"f{f}_c{n}_v{v}")
-
-    elif cl.type(n) == "and":
-        acyc.add(f"f{f}_c{n}_v{v}", "and" if v else "or")
-        for p in cl.fanin(n):
-            control(cl, acyc, p, 1 if v else 0, f, keys)
-            acyc.connect(f"f{f}_c{p}_v{1 if v else 0}", f"f{f}_c{n}_v{v}")
-
-    elif cl.type(n) == "nand":
-        acyc.add(f"f{f}_c{n}_v{v}", "or" if v else "and")
-        for p in cl.fanin(n):
-            control(cl, acyc, p, 0 if v else 1, f, keys)
-            acyc.connect(f"f{f}_c{p}_v{0 if v else 1}", f"f{f}_c{n}_v{v}")
-
-    elif cl.type(n) == "or":
-        acyc.add(f"f{f}_c{n}_v{v}", "or" if v else "and")
-        for p in cl.fanin(n):
-            control(cl, acyc, p, 1 if v else 0, f, keys)
-            acyc.connect(f"f{f}_c{p}_v{1 if v else 0}", f"f{f}_c{n}_v{v}")
-
-    elif cl.type(n) == "nor":
-        acyc.add(f"f{f}_c{n}_v{v}", "and" if v else "or")
-        for p in cl.fanin(n):
-            control(cl, acyc, p, 0 if v else 1, f, keys)
-            acyc.connect(f"f{f}_c{p}_v{0 if v else 1}", f"f{f}_c{n}_v{v}")
-
-    elif cl.type(n) == "xor":
-        acyc.add(f"f{f}_c{n}_v{v}", "or")
-        ps = list(cl.fanin(n))
-        for pvs in product([0, 1], repeat=len(ps)):
-            if sum(pvs) % 2 == v:
-                acyc.add(f"f{f}_c{n}_v{v}_sub_{pvs}", "and", fanout=f"f{f}_c{n}_v{v}")
-                for p, pv in zip(ps, pvs):
-                    control(cl, acyc, p, pv, f, keys)
-                    acyc.connect(f"f{f}_c{p}_v{pv}", f"f{f}_c{n}_v{v}_sub_{pvs}")
-    elif cl.type(n) == "xnor":
-        acyc.add(f"f{f}_c{n}_v{v}", "or")
-        ps = list(cl.fanin(n))
-        for pvs in product([0, 1], repeat=len(ps)):
-            if sum(pvs) % 2 != v:
-                acyc.add(f"f{f}_c{n}_v{v}_sub_{pvs}", "and", fanout=f"f{f}_c{n}_v{v}")
-                for p, pv in zip(ps, pvs):
-                    control(cl, acyc, p, pv, f, keys)
-                    acyc.connect(f"f{f}_c{p}_v{pv}", f"f{f}_c{n}_v{v}_sub_{pvs}")
-    elif cl.type(n) == "0":
-        acyc.add(f"f{f}_c{n}_v{v}", "0" if v else "1")
-    elif cl.type(n) == "1":
-        acyc.add(f"f{f}_c{n}_v{v}", "1" if v else "0")
+    if key:
+        cl = c_or_cl
+        for k, v in key.items():
+            cl.set_type(k, str(int(v)))
+        c = cl
     else:
-        print("gate error")
-        code.interact(local=dict(globals(), **locals()))
+        c = c_or_cl
+
+    ins = tuple(c.startpoints())
+    outs = tuple(c.endpoints())
+
+    # generate training samples
+    x = []
+    y = {o: [] for o in outs}
+    if verbose:
+        print(f"[{_localtime()}] Generating samples")
+    for i in range(nsamples):
+        x += [[random.choice((True, False)) for i in ins]]
+        result = sat(c, {i: v for i, v in zip(ins, x[-1])})
+        for o in outs:
+            y[o] += [result[o]]
+
+    if verbose:
+        print(f"[{_localtime()}] Training decision trees")
+    estimators = {o: DecisionTreeClassifier() for o in outs}
+    for o in outs:
+        estimators[o].fit(x, y[o])
+
+    if verbose:
+        print(f"[{_localtime()}] Testing decision trees")
+    ncorrect = 0
+    for i in range(nsamples):
+        x = [[random.choice((True, False)) for i in ins]]
+        result = sat(c, {i: v for i, v in zip(ins, x[-1])})
+        if all(result[o] == estimators[o].predict(x) for o in outs):
+            ncorrect += 1
+
+    if verbose:
+        print(f"[{_localtime()}] Test accuracy: {ncorrect / nsamples}")
+    return estimators

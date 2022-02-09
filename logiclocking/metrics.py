@@ -1,11 +1,10 @@
-# from multiprocessing import Pool
-import circuitgraph as cg
 from random import random
 from statistics import mean
 
+import circuitgraph as cg
+
 
 def corruptibility(cl, key):
-
     # set up miter
     ins = set(cl.startpoints() - key.keys())
     m = cg.miter(cl, startpoints=ins)
@@ -19,7 +18,6 @@ def corruptibility(cl, key):
 
 
 def key_corruption(cl, key, attack_key):
-
     # set up miter
     ins = set(cl.startpoints() - key.keys())
     m = cg.miter(cl, startpoints=ins)
@@ -33,7 +31,6 @@ def key_corruption(cl, key, attack_key):
 
 
 def min_corruption(cl, key, e=0.1, min_samples=10, tol=0.1):
-
     # find total errors
     cor = corruptibility(cl, key)
 
@@ -63,8 +60,3 @@ def avg_avg_sensitivity(cl, key={}):
         avg_sens.append(cl.avg_sensitivity(o, e=3, d=0.8) / len(cl.startpoints(o)))
 
     return mean(avg_sens)
-
-    # pool = Pool(47)
-    # avg_sen = lambda o: avg_sens.append(cl.avg_sensitivity(o,e=3,d=.8)/len(cl.startpoints(o)))
-
-    # return mean(pool.map(avg_sen,cl.outputs()))

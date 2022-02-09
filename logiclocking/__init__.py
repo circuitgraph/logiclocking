@@ -3,7 +3,10 @@ Python package `logiclocking` provides implementations of
 logic locking techniques using the `circuitgraph` package.
 """
 
-from logiclocking.locks import *
-from logiclocking.attacks import *
-from logiclocking.metrics import *
-from logiclocking.utils import *
+from logiclocking.utils import (
+    check_for_difference,
+    unroll,
+    acyclic_unroll,
+    read_key,
+    write_key,
+)
