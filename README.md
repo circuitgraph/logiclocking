@@ -44,7 +44,7 @@ If you would like to use the Decision Tree Attack, you must also install sklearn
 
 ```shell
 cd <install location>
-git clone https://github.com/circuitgraph/logiclocking.git
+git clone https://github.com/cmu-actl/logiclocking.git
 cd logiclocking
 pip install -e .
 ```
