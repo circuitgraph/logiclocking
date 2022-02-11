@@ -18,12 +18,12 @@ setuptools.setup(
         "Source": "https://github.com/circuitgraph/logiclocking",
     },
     include_package_data=True,
-    packages=["logiclocking", "logiclocking.tests"],
+    packages=["logiclocking"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
-    install_requires=["circuitgraph"]
+    python_requires=">=3.6",
+    install_requires=["circuitgraph"],
 )

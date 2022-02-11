@@ -16,7 +16,7 @@ class TestUtils(unittest.TestCase):
         c0 = cg.from_lib("c17")
         o = c0.outputs().pop()
 
-        c1 = cg.copy(c0)
+        c1 = c0.copy()
         c1.set_output(o, False)
         o_pre = c1.uid(f"{o}_pre")
         c1.relabel({o: o_pre})

@@ -1,8 +1,6 @@
 from ast import literal_eval
 
 import circuitgraph as cg
-from circuitgraph.sat import sat
-from circuitgraph.transform import miter
 
 
 def check_for_difference(oracle, locked_circuit, key):
@@ -25,14 +23,14 @@ def check_for_difference(oracle, locked_circuit, key):
             False if there is no difference, otherwise the assignment that
             produced a difference.
     """
-    m = miter(oracle, locked_circuit)
+    m = cg.tx.miter(oracle, locked_circuit)
     key = {f"c1_{k}": v for k, v in key.items()}
 
-    live = sat(m, assumptions=key)
+    live = cg.sat.solve(m, assumptions=key)
     if not live:
         return True
 
-    return sat(m, assumptions={"sat": True, **key})
+    return cg.sat.solve(m, assumptions={"sat": True, **key})
 
 
 def locked_unroll(
@@ -87,7 +85,7 @@ def locked_unroll(
             The unrolled locked circuit. If a dictionary was passed in, the oracle
             is also returned after the locked circuit
     """
-    locked_circuit_unrolled, io_map = cg.sequential_unroll(
+    locked_circuit_unrolled, io_map = cg.tx.sequential_unroll(
         locked_circuit,
         num_copies,
         D,
@@ -102,7 +100,7 @@ def locked_unroll(
         locked_circuit_unrolled.set_type(io_map[k], "buf")
         locked_circuit_unrolled.add(k, "input", fanout=io_map[k])
 
-    oracle_unrolled = cg.copy(locked_circuit_unrolled)
+    oracle_unrolled = locked_circuit_unrolled.copy()
     if isinstance(key, dict):
         for k, v in key.items():
             oracle_unrolled.set_type(k, str(int(v)))

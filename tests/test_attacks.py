@@ -4,7 +4,7 @@ import circuitgraph as cg
 from logiclocking import locks, attacks
 
 
-class TestLocks(unittest.TestCase):
+class TestAttacks(unittest.TestCase):
     def test_miter_attack_xor_lock(self):
         c = cg.from_lib("c17_gates")
         cl, key = locks.xor_lock(c, 8)

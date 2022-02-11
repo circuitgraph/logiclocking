@@ -3,8 +3,6 @@ import code
 import random
 
 import circuitgraph as cg
-from circuitgraph.sat import sat, construct_solver, cnf, remap
-from circuitgraph.transform import miter, acyclic_unroll
 
 
 def _localtime():
@@ -50,7 +48,7 @@ def miter_attack(
 
     if cl.is_cyclic():
         if unroll_cyclic:
-            cl = acyclic_unroll(cl)
+            cl = cg.tx.acyclic_unroll(cl)
         else:
             raise ValueError(
                 "Circuit is cyclic. Set 'unroll_cyclic' to True to run sat on "
@@ -63,11 +61,11 @@ def miter_attack(
     outs = tuple(cl.endpoints())
 
     # create simulation solver
-    s_sim, v_sim = construct_solver(cl, key)
+    s_sim, v_sim = cg.sat.construct_solver(cl, key)
 
     # create miter solver
-    m = miter(cl, startpoints=set(ins))
-    s_miter, v_miter = construct_solver(m)
+    m = cg.tx.miter(cl, startpoints=set(ins))
+    s_miter, v_miter = cg.sat.construct_solver(m)
 
     # add key constraints
     if key_cons:
@@ -79,15 +77,15 @@ def miter_attack(
                     f"[{_localtime()}] circuit: {cl.name}, "
                     f"adding constraints: {key_con.name}"
                 )
-            formula, v_cons = cnf(key_con)
+            formula, v_cons = cg.sat.cnf(key_con)
             con_clauses = formula.clauses
 
             # add constraints circuits
             c0_offset = s_miter.nof_vars()
-            c0 = remap(con_clauses, c0_offset)
+            c0 = cg.sat.remap(con_clauses, c0_offset)
             s_miter.append_formula(c0)
             c1_offset = s_miter.nof_vars()
-            c1 = remap(con_clauses, c1_offset)
+            c1 = cg.sat.remap(con_clauses, c1_offset)
             s_miter.append_formula(c1)
 
             # encode keys connections
@@ -108,7 +106,7 @@ def miter_attack(
             s_miter.append_formula(clauses)
 
     # get circuit clauses
-    formula, v_c = cnf(cl)
+    formula, v_c = cg.sat.cnf(cl)
     clauses = formula.clauses
 
     # solve
@@ -149,10 +147,10 @@ def miter_attack(
 
         # add constraints circuits
         c0_offset = s_miter.nof_vars()
-        c0 = remap(clauses, c0_offset)
+        c0 = cg.sat.remap(clauses, c0_offset)
         s_miter.append_formula(c0)
         c1_offset = s_miter.nof_vars()
-        c1 = remap(clauses, c1_offset)
+        c1 = cg.sat.remap(clauses, c1_offset)
         s_miter.append_formula(c1)
 
         # encode dis + dos
@@ -222,7 +220,7 @@ def miter_attack(
         **{f"c1_{k}": v for k, v in attack_key.items()},
         "sat": True,
     }
-    equivalent = not sat(m, assumptions)
+    equivalent = not cg.sat.solve(m, assumptions)
     if verbose:
         print(f"[{_localtime()}] circuit: {cl.name}, equivalent: {equivalent}")
 
@@ -290,7 +288,7 @@ def decision_tree_attack(c_or_cl, nsamples, key=None, verbose=True):
         print(f"[{_localtime()}] Generating samples")
     for i in range(nsamples):
         x += [[random.choice((True, False)) for i in ins]]
-        result = sat(c, {i: v for i, v in zip(ins, x[-1])})
+        result = cg.sat.solve(c, {i: v for i, v in zip(ins, x[-1])})
         for o in outs:
             y[o] += [result[o]]
 
@@ -305,7 +303,7 @@ def decision_tree_attack(c_or_cl, nsamples, key=None, verbose=True):
     ncorrect = 0
     for i in range(nsamples):
         x = [[random.choice((True, False)) for i in ins]]
-        result = sat(c, {i: v for i, v in zip(ins, x[-1])})
+        result = cg.sat.solve(c, {i: v for i, v in zip(ins, x[-1])})
         if all(result[o] == estimators[o].predict(x) for o in outs):
             ncorrect += 1
 

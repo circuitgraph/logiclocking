@@ -3,9 +3,6 @@ import random
 from random import randint, choice, choices, sample, shuffle
 
 import circuitgraph as cg
-from circuitgraph.sat import sat
-from circuitgraph.transform import sensitivity_transform
-from circuitgraph import logic
 from pysat.solvers import Cadical
 from pysat.formula import IDPool
 from pysat.card import CardEnc
@@ -45,7 +42,7 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
     circuitgraph.Circuit, dict of str:bool
             The locked circuit and the correct key value for each key input.
     """
-    cl = cg.copy(c)
+    cl = c.copy()
 
     if keylen % 2 != 0:
         raise NotImplementedError
@@ -165,7 +162,7 @@ def xor_lock(c, keylen, key_prefix="key_", replacement=False):
             the locked circuit and the correct key value for each key input
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     # randomly select gates to lock
     if replacement:
@@ -210,10 +207,10 @@ def mux_lock(c, keylen, avoid_loops=False, key_prefix="key_"):
             the locked circuit and the correct key value for each key input
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     # get 2:1 mux
-    m = logic.mux(2)
+    m = cg.logic.mux(2)
 
     # randomly select gates
     gates = sample(tuple(cl.nodes() - cl.outputs()), keylen)
@@ -288,10 +285,10 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
             the locked circuit and the correct key value for each key input
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     # parse mux
-    m = logic.mux(2 ** lut_width)
+    m = cg.logic.mux(2 ** lut_width)
 
     # randomly select gates
     potentialGates = set(
@@ -336,7 +333,7 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
             key_in = cl.add(
                 f"key_{i*2**lut_width+j}", "input", fanout=f"lut_{i}_in_{j}", uid=True
             )
-            result = sat(c, assumptions)
+            result = cg.sat.solve(c, assumptions)
             if not result:
                 key[key_in] = False
             else:
@@ -352,7 +349,7 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
 
         # delete gate
         cl.remove(gate)
-        cl = cg.relabel(cl, {f"lut_{i}_out": gate})
+        cl = cg.tx.relabel(cl, {f"lut_{i}_out": gate})
 
     cg.lint(cl)
     return cl, key
@@ -401,7 +398,7 @@ def lut_lock(
             if there are not enough viable gates to lock.
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     def calc_skew(gate, cl):
         d = {False: 0, True: 0}
@@ -416,7 +413,7 @@ def lut_lock(
         # simulate
         for i, vs in enumerate(product([False, True], repeat=len(fanin))):
             assumptions = {s: v for s, v in zip(fanin, vs[::-1])}
-            result = sat(simc, assumptions)
+            result = cg.sat.solve(simc, assumptions)
             if not result:
                 d[False] += 1
             else:
@@ -426,7 +423,7 @@ def lut_lock(
 
     def replace_lut(gate, cl):
         key = dict()
-        m = logic.mux(2 ** len(cl.fanin(gate)))
+        m = cg.logic.mux(2 ** len(cl.fanin(gate)))
         fanout = list(cl.fanout(gate))
         fanin = list(cl.fanin(gate))
 
@@ -443,7 +440,7 @@ def lut_lock(
         for i, vs in enumerate(product([False, True], repeat=len(fanin))):
             assumptions = {s: v for s, v in zip(fanin, vs[::-1])}
             cl.add(f"{key_prefix}{gate}_{i}", "input", fanout=f"lut_{gate}_in_{i}")
-            result = sat(simc, assumptions)
+            result = cg.sat.solve(simc, assumptions)
             if not result:
                 key[f"{key_prefix}{gate}_{i}"] = False
             else:
@@ -513,7 +510,7 @@ def lut_lock(
             key, nodes, output_to_relabel = replace_lut(candidate, cl)
             keys.update(key)
             forbidden_nodes.update(nodes)
-            cl = cg.relabel(cl, {output_to_relabel: candidate})
+            cl = cg.tx.relabel(cl, {output_to_relabel: candidate})
             if candidate_is_output:
                 cl.set_output(candidate)
             for g1 in children:
@@ -556,7 +553,7 @@ def tt_lock(c, width, target_output=None):
             the locked circuit and the correct key value for each key input
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     if len(c.inputs()) < width:
         raise ValueError(f"Not enough inputs to lock with width '{width}'")
@@ -588,7 +585,7 @@ def tt_lock(c, width, target_output=None):
 
     # flip output
     old_out = cl.uid(f"{target_output}_pre_lock")
-    cl = cg.relabel(cl, {target_output: old_out})
+    cl = cg.tx.relabel(cl, {target_output: old_out})
     cl.set_output(old_out, False)
     cl.add(
         target_output, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True
@@ -619,7 +616,7 @@ def tt_lock_sen(c, width, nsamples=10):
             the locked circuit and the correct key value for each key input
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     # find output with large enough fanin
     potential_outs = [o for o in cl.outputs() if len(cl.startpoints(o)) >= width]
@@ -632,7 +629,7 @@ def tt_lock_sen(c, width, nsamples=10):
     S = {}
     for o in potential_outs:
         # build sensitivity circuit
-        s = sensitivity_transform(c, o)
+        s = cg.tx.sensitivity_transform(c, o)
         startpoints = c.startpoints(o)
         s_out = set(o for o in s.outputs() if "difference" in o)
 
@@ -640,7 +637,7 @@ def tt_lock_sen(c, width, nsamples=10):
         total = 0
         for i in range(nsamples):
             input_val = {i: randint(0, 1) for i in startpoints}
-            model = sat(s, input_val)
+            model = cg.sat.solve(s, input_val)
             sen = sum(model[o] for o in s_out)
             total += sen
         A[o] = int(total / nsamples)
@@ -654,10 +651,12 @@ def tt_lock_sen(c, width, nsamples=10):
             for o in potential_outs:
                 upper = min(N[o], int(N[o] - A[o] + b))
                 lower = max(0, int(N[o] - A[o] - b))
-                us = cg.int_to_bin(upper, cg.clog2(N[o]))
-                ls = cg.int_to_bin(lower, cg.clog2(N[o]))
+                us = cg.utils.int_to_bin(upper, cg.utils.clog2(N[o]))
+                ls = cg.utils.int_to_bin(lower, cg.utils.clog2(N[o]))
                 for sv in [us, ls]:
-                    model = sat(S[o], {f"sen_out_{i}": v for i, v in enumerate(sv)})
+                    model = cg.sat.solve(
+                        S[o], {f"sen_out_{i}": v for i, v in enumerate(sv)}
+                    )
                     if model:
                         out = o
                         startpoints = c.startpoints(o)
@@ -681,7 +680,7 @@ def tt_lock_sen(c, width, nsamples=10):
 
     # flip output
     old_out = cl.uid(f"{out}_pre_lock")
-    cl = cg.relabel(cl, {out: old_out})
+    cl = cg.tx.relabel(cl, {out: old_out})
     cl.set_output(old_out, False)
     cl.add(out, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True)
 
@@ -716,10 +715,10 @@ def sfll_hd(c, width, hd, target_output=None):
             the locked circuit and the correct key value for each key input
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     # parse popcount
-    p = logic.popcount(width)
+    p = cg.logic.popcount(width)
 
     if len(c.inputs()) < width:
         raise ValueError(f"Not enough inputs to lock with width '{width}'")
@@ -754,7 +753,7 @@ def sfll_hd(c, width, hd, target_output=None):
     # connect outputs
     cl.add("flip_out", "and")
     cl.add("restore_out", "and")
-    for i, v in enumerate(format(hd, f"0{cg.clog2(width)+1}b")[::-1]):
+    for i, v in enumerate(format(hd, f"0{cg.utils.clog2(width)+1}b")[::-1]):
         cl.add(f"hd_{i}", v)
         cl.add(
             f"restore_out_xnor_{i}",
@@ -771,7 +770,7 @@ def sfll_hd(c, width, hd, target_output=None):
 
     # flip output
     old_out = cl.uid(f"{target_output}_pre_lock")
-    cl = cg.relabel(cl, {target_output: old_out})
+    cl = cg.tx.relabel(cl, {target_output: old_out})
     cl.set_output(old_out, False)
     cl.add(
         target_output, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True
@@ -808,7 +807,7 @@ def sfll_flex(c, width, n, target_output=None):
             the locked circuit and the correct key value for each key input
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     if not target_output:
         target_output = random.choice(list(cl.outputs()))
@@ -851,7 +850,7 @@ def sfll_flex(c, width, n, target_output=None):
 
     # flip output
     old_out = cl.uid(f"{target_output}_pre_lock")
-    cl = cg.relabel(cl, {target_output: old_out})
+    cl = cg.tx.relabel(cl, {target_output: old_out})
     cl.set_output(old_out, False)
     cl.add(
         target_output, "xor", fanin=[old_out, "restore_out", "flip_out"], output=True
@@ -862,9 +861,9 @@ def sfll_flex(c, width, n, target_output=None):
 
 
 def connect_banyan(cl, swb_ins, swb_outs, bw):
-    I = int(2 * cg.clog2(bw) - 2)
+    I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
-    for i in range(cg.clog2(J)):
+    for i in range(cg.utils.clog2(J)):
         r = J / (2 ** i)
         for j in range(J):
             t = (j % r) >= (r / 2)
@@ -896,9 +895,9 @@ def connect_banyan(cl, swb_ins, swb_outs, bw):
 
 
 def connect_banyan_bb(cl, swb_ins, swb_outs, bw):
-    I = int(2 * cg.clog2(bw) - 2)
+    I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
-    for i in range(cg.clog2(J)):
+    for i in range(cg.utils.clog2(J)):
         r = J / (2 ** i)
         for j in range(J):
             t = (j % r) >= (r / 2)
@@ -987,7 +986,7 @@ def full_lock(c, bw, lw, avoid_loops=False):
         cl, key = random_lut_lock(c, int(bw / lw), lw)
 
     # generate switch
-    m = cg.strip_io(logic.mux(2))
+    m = cg.tx.strip_io(cg.logic.mux(2))
     s = cg.Circuit(name="switch")
     s.add_subcircuit(m, "m0")
     s.add_subcircuit(m, "m1")
@@ -1000,7 +999,7 @@ def full_lock(c, bw, lw, avoid_loops=False):
     s.add("key_2", "input", fanout="out_1")
 
     # generate banyan
-    I = int(2 * cg.clog2(bw) - 2)
+    I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
 
     # add switches
@@ -1024,9 +1023,9 @@ def full_lock(c, bw, lw, avoid_loops=False):
     # get banyan mapping
     mapping = {}
     polarity = {}
-    orig_result = sat(cl, {**{n: False for n in net_ins}, **key})
+    orig_result = cg.sat.solve(cl, {**{n: False for n in net_ins}, **key})
     for net_in in net_ins:
-        result = sat(
+        result = cg.sat.solve(
             cl, {**{n: False if n != net_in else True for n in net_ins}, **key}
         )
         for net_out in net_outs:
@@ -1089,7 +1088,7 @@ def full_lock_mux(c, bw, lw):
     b = cg.Circuit()
 
     # generate switch
-    m = cg.strip_io(logic.mux(2))
+    m = cg.tx.strip_io(cg.logic.mux(2))
     s = cg.Circuit(name="switch")
     s.add_subcircuit(m, "m0")
     s.add_subcircuit(m, "m1")
@@ -1102,7 +1101,7 @@ def full_lock_mux(c, bw, lw):
     s.add("key_2", "input", fanout="out_1")
 
     # generate banyan
-    I = int(2 * cg.clog2(bw) - 2)
+    I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
 
     # add switches
@@ -1127,9 +1126,11 @@ def full_lock_mux(c, bw, lw):
     # get banyan mapping
     mapping = {}
     polarity = {}
-    orig_result = sat(b, {**{n: False for n in net_ins}, **key})
+    orig_result = cg.sat.solve(b, {**{n: False for n in net_ins}, **key})
     for net_in in net_ins:
-        result = sat(b, {**{n: False if n != net_in else True for n in net_ins}, **key})
+        result = cg.sat.solve(
+            b, {**{n: False if n != net_in else True for n in net_ins}, **key}
+        )
         for net_out in net_outs:
             if result[net_out] != orig_result[net_out]:
                 mapping[net_in] = net_out
@@ -1140,16 +1141,16 @@ def full_lock_mux(c, bw, lw):
     cl, key = random_lut_lock(c, int(bw / lw), lw)
 
     # generate mux
-    m = cg.strip_io(logic.mux(bw))
+    m = cg.tx.strip_io(cg.logic.mux(bw))
 
     # add muxes and xors
     banyan_to_mux = {}
     for i in range(bw):
         cl.add_subcircuit(m, f"mux_{i}")
-        for b in range(cg.clog2(bw)):
+        for b in range(cg.utils.clog2(bw)):
             cl.add(f"key_{i}_{b}", "input", fanout=f"mux_{i}_sel_{b}")
         cl.add(f"mux_{i}_xor", "xor", fanin=f"mux_{i}_out")
-        cl.add(f"key_{i}_{cg.clog2(bw)}", "input", fanout=f"mux_{i}_xor")
+        cl.add(f"key_{i}_{cg.utils.clog2(bw)}", "input", fanout=f"mux_{i}_xor")
         banyan_to_mux[net_outs[i]] = f"mux_{i}_xor"
 
     # connect muxes to luts
@@ -1163,15 +1164,15 @@ def full_lock_mux(c, bw, lw):
 
         if not polarity[net_in]:
             driver = cl.add(f"not_{net_in}", "not", fanin=driver)
-            key[f"key_{o}_{cg.clog2(bw)}"] = True
+            key[f"key_{o}_{cg.utils.clog2(bw)}"] = True
         else:
-            key[f"key_{o}_{cg.clog2(bw)}"] = False
+            key[f"key_{o}_{cg.utils.clog2(bw)}"] = False
 
         for b in range(bw):
             cl.connect(driver, f"mux_{b}_in_{i}")
 
         cl.connect(xor, f"lut_{i//lw}_sel_{i%lw}")
-        for b, v in enumerate(cg.int_to_bin(i, cg.clog2(bw), True)):
+        for b, v in enumerate(cg.utils.int_to_bin(i, cg.utils.clog2(bw), True)):
             key[f"key_{o}_{b}"] = v
 
     cg.lint(cl)
@@ -1203,11 +1204,11 @@ def inter_lock(c, bw, reduced_swb=False):
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
     """
-    cl = cg.copy(c)
+    cl = c.copy()
     cg.lint(cl)
 
     # generate switch
-    m = cg.strip_io(logic.mux(2))
+    m = cg.tx.strip_io(cg.logic.mux(2))
     s = cg.Circuit(name="switch")
     s.add_subcircuit(m, "m0")
     s.add_subcircuit(m, "m1")
@@ -1242,7 +1243,7 @@ def inter_lock(c, bw, reduced_swb=False):
     sbb = cg.BlackBox("switch", sbb_inputs, ["out_0", "out_1"],)
 
     # Select paths to embed in the routing network
-    path_length = 2 * cg.clog2(bw) - 2
+    path_length = 2 * cg.utils.clog2(bw) - 2
     paths = []
 
     filtered_gates = set()
@@ -1384,14 +1385,14 @@ def lebl(c, bw, ng):
             the locked circuit and the correct key value for each key input
     """
     # create copy to lock
-    cl = cg.copy(c)
+    cl = c.copy()
 
     # generate switch and mux
     s = cg.Circuit(name="switch")
-    m2 = cg.strip_io(logic.mux(2))
+    m2 = cg.tx.strip_io(cg.logic.mux(2))
     s.add_subcircuit(m2, "m2_0")
     s.add_subcircuit(m2, "m2_1")
-    m4 = cg.strip_io(logic.mux(4))
+    m4 = cg.tx.strip_io(cg.logic.mux(4))
     s.add_subcircuit(m4, "m4_0")
     s.add_subcircuit(m4, "m4_1")
     s.add("in_0", "buf", fanout=["m2_0_in_0", "m2_1_in_1"])
@@ -1403,7 +1404,7 @@ def lebl(c, bw, ng):
     s.add("key_2", "input", fanout=["m4_0_sel_1", "m4_1_sel_1"])
 
     # generate banyan
-    I = int(2 * cg.clog2(bw) - 2)
+    I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
 
     # add switches and muxes
