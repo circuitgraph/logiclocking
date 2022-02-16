@@ -76,7 +76,7 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
     random.shuffle(rem_gates)
 
     j = 0
-    k = dict()
+    k = {}
     # Replace existing inv_gates with XOR key-gates
     for _ in range(s1a):
         sel_gate = inv_gates.pop()
@@ -126,9 +126,9 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
     if shuffle_key:
         new_order = list(range(keylen))
         shuffle(new_order)
-        shuffled_k = dict()
-        intermediate_mapping = dict()
-        final_mapping = dict()
+        shuffled_k = {}
+        intermediate_mapping = {}
+        final_mapping = {}
         for old_idx, new_idx in enumerate(new_order):
             shuffled_k[f"key_{new_idx}"] = k[f"key_{old_idx}"]
             intermediate_mapping[f"key_{old_idx}"] = f"key_{old_idx}_temp"
@@ -136,8 +136,7 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
         cl.relabel(intermediate_mapping)
         cl.relabel(final_mapping)
         return cl, shuffled_k
-    else:
-        return cl, k
+    return cl, k
 
 
 def xor_lock(c, keylen, key_prefix="key_", replacement=False):
@@ -291,7 +290,7 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
     m = cg.logic.mux(2 ** lut_width)
 
     # randomly select gates
-    potentialGates = set(
+    potential_gates = set(
         g for g in cl.nodes() - cl.io() if len(cl.fanin(g)) <= lut_width
     )
     if gates:
@@ -305,9 +304,9 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
         if any(g in cl.io() for g in gates):
             raise ValueError("cannot lock an input/output gate")
     else:
-        gates = sample(tuple(potentialGates), num_gates)
-    potentialGates -= set(gates)
-    potentialGates -= cl.transitive_fanout(gates)
+        gates = sample(tuple(potential_gates), num_gates)
+    potential_gates -= set(gates)
+    potential_gates -= cl.transitive_fanout(gates)
 
     # insert key gates
     key = {}
@@ -317,10 +316,10 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
         fanin = list(cl.fanin(gate))
         try:
             padding = sample(
-                tuple(potentialGates - cl.fanin(gate)), lut_width - len(fanin)
+                tuple(potential_gates - cl.fanin(gate)), lut_width - len(fanin)
             )
-        except ValueError:
-            raise ValueError("Could not find enough viable gates for padding")
+        except ValueError as e:
+            raise ValueError("Could not find enough viable gates for padding") from e
 
         # create LUT
         cl.add_subcircuit(m, f"lut_{i}")
@@ -408,11 +407,11 @@ def lut_lock(
         simc = cg.Circuit()
         for i in fanin:
             simc.add(i, "input")
-        simc.add(gate, type=cl.type(gate), fanin=fanin)
+        simc.add(gate, cl.type(gate), fanin=fanin)
 
         # simulate
         for i, vs in enumerate(product([False, True], repeat=len(fanin))):
-            assumptions = {s: v for s, v in zip(fanin, vs[::-1])}
+            assumptions = dict(zip(fanin, vs[::-1]))
             result = cg.sat.solve(simc, assumptions)
             if not result:
                 d[False] += 1
@@ -422,7 +421,7 @@ def lut_lock(
         return abs(d[False] / num_combos - d[True] / num_combos)
 
     def replace_lut(gate, cl):
-        key = dict()
+        key = {}
         m = cg.logic.mux(2 ** len(cl.fanin(gate)))
         fanout = list(cl.fanout(gate))
         fanin = list(cl.fanin(gate))
@@ -434,11 +433,11 @@ def lut_lock(
         simc = cg.Circuit()
         for i in fanin:
             simc.add(i, "input")
-        simc.add(gate, type=cl.type(gate), fanin=fanin)
+        simc.add(gate, cl.type(gate), fanin=fanin)
 
         # connect keys
         for i, vs in enumerate(product([False, True], repeat=len(fanin))):
-            assumptions = {s: v for s, v in zip(fanin, vs[::-1])}
+            assumptions = dict(zip(fanin, vs[::-1]))
             cl.add(f"{key_prefix}{gate}_{i}", "input", fanout=f"lut_{gate}_in_{i}")
             result = cg.sat.solve(simc, assumptions)
             if not result:
@@ -461,8 +460,7 @@ def lut_lock(
     def continue_locking(locked_gates, num_gates, keys, count_keys):
         if count_keys:
             return len(keys) < num_gates
-        else:
-            return locked_gates < num_gates
+        return locked_gates < num_gates
 
     locked_gates = 0
     outputs = list(cl.outputs())
@@ -482,16 +480,16 @@ def lut_lock(
     outputs.sort(key=rank_output)
     candidates = []
     forbidden_nodes = set()
-    keys = dict()
+    keys = {}
     while continue_locking(locked_gates, num_gates, keys, count_keys):
         if not candidates:
             outputs = [o for o in outputs if o not in forbidden_nodes]
             try:
                 candidates.append(outputs.pop(0))
-            except IndexError:
+            except IndexError as e:
                 raise ValueError(
                     "Ran out of candidate gates at " f"{locked_gates} gates."
-                )
+                ) from e
         else:
             candidate = candidates.pop(0)
             candidate_is_output = cl.is_output(candidate)
@@ -1025,9 +1023,7 @@ def full_lock(c, bw, lw, avoid_loops=False):
     polarity = {}
     orig_result = cg.sat.solve(cl, {**{n: False for n in net_ins}, **key})
     for net_in in net_ins:
-        result = cg.sat.solve(
-            cl, {**{n: False if n != net_in else True for n in net_ins}, **key}
-        )
+        result = cg.sat.solve(cl, {**{n: n == net_in for n in net_ins}, **key})
         for net_out in net_outs:
             if result[net_out] != orig_result[net_out]:
                 mapping[net_in] = net_out
@@ -1272,8 +1268,8 @@ def inter_lock(c, bw, reduced_swb=False):
     for _ in range(bw):
         try:
             gate = next(candidate_gates)
-        except StopIteration:
-            raise ValueError("Not enough candidate gates found for locking")
+        except StopIteration as e:
+            raise ValueError("Not enough candidate gates found for locking") from e
         path = [gate]
         for _ in range(path_length - 1):
             gate = cl.fanout(gate).pop()
@@ -1310,7 +1306,7 @@ def inter_lock(c, bw, reduced_swb=False):
             key[f"swb_{i}_key_1"] = False
             key[f"swb_{i}_key_2"] = True
 
-    f_gates = dict()
+    f_gates = {}
 
     # Add paths to banyan
     # Get a random intial ordering of paths
@@ -1649,18 +1645,14 @@ def lebl(c, bw, ng):
                 mux_gate_types.add(t)
                 mux_input = f"swb_{i//2}_m4_{i%2}_in_{j}"
                 cl.set_type(mux_input, t)
-                if t == "not" or t == "buf":
+                if t in ("not", "buf"):
                     # pick a random fanin
                     cl.connect(f"swb_{i//2}_m2_{randint(0,1)}_out", mux_input)
-                elif t == "1" or t == "0":
+                elif t in ("0", "1"):
                     pass
                 else:
                     cl.connect(f"swb_{i//2}_m2_0_out", mux_input)
                     cl.connect(f"swb_{i//2}_m2_1_out", mux_input)
-        if [n for n in cl if cl.type(n) in ["buf", "not"] and len(cl.fanin(n)) > 1]:
-            import code
-
-            code.interact(local=dict(globals(), **locals()))
 
     # connect outputs non constant outs
     rev_mapping = {}
@@ -1670,12 +1662,8 @@ def lebl(c, bw, ng):
                 rev_mapping[mapping[bn]] = set()
             rev_mapping[mapping[bn]].add(bn)
 
-    for cn in rev_mapping.keys():
-        # for fcn in cl.fanout(cn):
-        #    cl.connect(sample(rev_mapping[cn],1)[0],fcn)
-        for fcn, bn in zip_longest(
-            cl.fanout(cn), rev_mapping[cn], fillvalue=list(rev_mapping[cn])[0]
-        ):
+    for cn, val in rev_mapping.items():
+        for fcn, bn in zip_longest(cl.fanout(cn), val, fillvalue=list(val)[0]):
             cl.connect(bn, fcn)
 
     # delete mapped gates
