@@ -8,7 +8,7 @@ from pysat.formula import IDPool
 from pysat.card import CardEnc
 
 
-def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
+def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
     """
     Locks a circuitgraph with Truly Random Logic Locking as outlined in
     N. Limaye, E. Kalligeros, N. Karousos, I. G. Karybali and O. Sinanoglu,
@@ -37,11 +37,15 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
             By default, the key input labels are shuffled at the end of the
             algorithm so the labelling does not reveal which portion of the
             algorithm the key input was added during.
+    seed: int
+            Seed for the random selection of gates and shuffling of the key.
 
     Returns:
     circuitgraph.Circuit, dict of str:bool
             The locked circuit and the correct key value for each key input.
     """
+    rng = random.Random(seed)
+
     cl = c.copy()
 
     if keylen % 2 != 0:
@@ -60,20 +64,20 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
     #       much more evenly-sized distributions. Going with the paper
     #       implementation for now... They also don't specify a specific
     #       type of distribution, so defaulting to uniform
-    s1a = randint(0, s1)
+    s1a = rng.randint(0, s1)
     s1b = s1 - s1a
 
-    s2a = randint(0, s2)
+    s2a = rng.randint(0, s2)
     s2b = s2 - s2a
 
     inv_gates = list(c.filter_type("not"))
-    random.shuffle(inv_gates)
+    rng.shuffle(inv_gates)
     rem_gates = list(
         c.nodes()
         - c.io()
         - c.filter_type(("not", "bb_input", "bb_output", "0", "1", "x"))
     )
-    random.shuffle(rem_gates)
+    rng.shuffle(rem_gates)
 
     j = 0
     k = {}
@@ -125,7 +129,7 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True):
     # Shuffle keys
     if shuffle_key:
         new_order = list(range(keylen))
-        shuffle(new_order)
+        rng.shuffle(new_order)
         shuffled_k = {}
         intermediate_mapping = {}
         final_mapping = {}

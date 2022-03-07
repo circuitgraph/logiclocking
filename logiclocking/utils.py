@@ -81,9 +81,8 @@ def locked_unroll(
 
     Returns
     -------
-    circuitgraph.Circuit
-            The unrolled locked circuit. If a dictionary was passed in, the oracle
-            is also returned after the locked circuit
+    circuitgraph.Circuit, circuitgraph.Circuit, dict of str:list of str
+            The unrolled locked circuit, the unrolled oracle, and the io map.
     """
     locked_circuit_unrolled, io_map = cg.tx.sequential_unroll(
         locked_circuit,
@@ -99,15 +98,13 @@ def locked_unroll(
     for k in key:
         locked_circuit_unrolled.set_type(io_map[k], "buf")
         locked_circuit_unrolled.add(k, "input", fanout=io_map[k])
+        del io_map[k]
 
     oracle_unrolled = locked_circuit_unrolled.copy()
-    if isinstance(key, dict):
-        for k, v in key.items():
-            oracle_unrolled.set_type(k, str(int(v)))
+    for k, v in key.items():
+        oracle_unrolled.set_type(k, str(int(v)))
 
-        return locked_circuit_unrolled, oracle_unrolled
-    else:
-        return locked_circuit_unrolled
+    return locked_circuit_unrolled, oracle_unrolled, io_map
 
 
 def write_key(key, filename):
