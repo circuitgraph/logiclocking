@@ -1,6 +1,9 @@
 # CircuitGraph LogicLocking
 
-[![Python package](https://github.com/cmu-actl/logiclocking/actions/workflows/python-package.yml/badge.svg)](https://github.com/cmu-actl/logiclocking/actions/workflows/python-package.yml)
+[![Python package](https://github.com/circuitgraph/logiclocking/actions/workflows/python-package.yml/badge.svg)](https://github.com/circuitgraph/logiclocking/actions/workflows/python-package.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
 
 Implementations of various logic locks and attacks.
 
@@ -25,11 +28,11 @@ write_key(k, "c880_locked_key.txt")
 ## Installing
 
 Logiclocking is not yet available on PyPi, so you must install locally.
-For this internal fork of logiclocking, you must also have the internal version of circuitgraph installed. Do this BEFORE installing logiclocking
+
 ```shell
 cd <install location>
-git clone https://github.com/cmu-actl/circuitgraph.git
-cd circuitgraph
+git clone https://github.com/cmu-actl/logiclocking.git
+cd logiclocking
 pip install -e .
 ```
 
@@ -41,10 +44,19 @@ If you would like to use the Decision Tree Attack, you must also install sklearn
 
 `pip install scikit-learn`
 
+## Contributing
 
+Tests are run using the builtin unittest framework. Some basic linting is performed using flake8.
 ```shell
-cd <install location>
-git clone https://github.com/cmu-actl/logiclocking.git
-cd logiclocking
-pip install -e .
+pip instsall flake8
+make test
 ```
+
+Code should be formatted using [black](https://black.readthedocs.io/en/stable/).
+[Pre-commit](https://pre-commit.com) is used to automatically run black on commit.
+```shell
+pip install black pre-commit
+pre-commit install
+```
+Pre-commit also runs a few other hooks, including a docstring formatter and linter. Docs follow the `numpy` documentation convention.
+
