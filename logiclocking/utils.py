@@ -1,3 +1,4 @@
+"""Various utils for working with logic-locked circuits."""
 from ast import literal_eval
 
 import circuitgraph as cg
@@ -5,11 +6,13 @@ import circuitgraph as cg
 
 def check_for_difference(oracle, locked_circuit, key):
     """
-    Checks if there is a difference between an oracle and a locked circuit
+    Check the correctness of a key.
+
+    Returns any differences between the oracle and a locked circuit
     with a specific key applied.
 
     Parameters
-    ---------
+    ----------
     oracle: circuitgraph.Circuit
             The unlocked circuit to check against.
     locked_circuit: circuitgraph.Circuit
@@ -22,6 +25,7 @@ def check_for_difference(oracle, locked_circuit, key):
     False or dict of str:bool
             False if there is no difference, otherwise the assignment that
             produced a difference.
+
     """
     m = cg.tx.miter(oracle, locked_circuit)
     key = {f"c1_{k}": v for k, v in key.items()}
@@ -45,9 +49,10 @@ def locked_unroll(
     prefix="cg_unroll",
 ):
     """
-    Unrolls a sequential circuit to prepare for a combinational attack. This can be
-    used for locks applied on sequential circuits that prevent scan-chain access.
+    Unrolls a sequential circuit to prepare for a combinational attack.
 
+    This can be used for locks applied on sequential circuits that prevent
+    scan-chain access.
     Note that this function uses the `prefix` variable to identify unrolled
     nodes, so choosing a prefix that is already used in nodes in the sequential
     circuit can cause undefined behavior.
@@ -83,6 +88,7 @@ def locked_unroll(
     -------
     circuitgraph.Circuit, circuitgraph.Circuit, dict of str:list of str
             The unrolled locked circuit, the unrolled oracle, and the io map.
+
     """
     locked_circuit_unrolled, io_map = cg.tx.sequential_unroll(
         locked_circuit,
@@ -108,16 +114,12 @@ def locked_unroll(
 
 
 def write_key(key, filename):
-    """
-    Write a key dictionary to a file
-    """
+    """Write a key dictionary to a file."""
     with open(filename, "w") as f:
         f.write(str(key) + "\n")
 
 
 def read_key(filename):
-    """
-    Read a key dictionary from a file
-    """
+    """Read a key dictionary from a file."""
     with open(filename) as f:
         return literal_eval(f.read())

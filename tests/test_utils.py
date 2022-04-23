@@ -1,14 +1,9 @@
-import unittest
 import tempfile
+import unittest
 
 import circuitgraph as cg
-from logiclocking import locks
-from logiclocking import (
-    check_for_difference,
-    locked_unroll,
-    write_key,
-    read_key,
-)
+
+from logiclocking import check_for_difference, locked_unroll, locks, read_key, write_key
 
 
 class TestUtils(unittest.TestCase):
@@ -30,7 +25,7 @@ class TestUtils(unittest.TestCase):
         c = cg.from_lib("s27")
         cl, key = locks.trll(c, 8, shuffle_key=False)
         num_copies = 4
-        clu, cu = locked_unroll(cl, key, num_copies, initial_values="0")
+        clu, cu, io_map = locked_unroll(cl, key, num_copies, initial_values="0")
         self.assertEqual(len(cu.inputs()), (len(c.inputs()) - 1) * num_copies)
         self.assertEqual(len(cu.outputs()), len(c.outputs()) * num_copies)
         self.assertSetEqual(cu.inputs(), clu.inputs() - set(key))

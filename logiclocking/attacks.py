@@ -1,6 +1,7 @@
-import time
+"""Run attacks on logic-locked circuits."""
 import code
 import random
+import time
 
 import circuitgraph as cg
 
@@ -19,7 +20,7 @@ def miter_attack(
     code_on_error=True,
 ):
     """
-    Launch a miter-based sat attack on a locked circuit
+    Launch a miter-based sat attack on a locked circuit.
 
     Parameters
     ----------
@@ -43,6 +44,7 @@ def miter_attack(
     -------
     dict
             A dictionary containing attack info and results
+
     """
     start_time = time.time()
 
@@ -245,8 +247,9 @@ def miter_attack(
 def decision_tree_attack(c_or_cl, nsamples, key=None, verbose=True):
     """
     Launch a decision tree attack on a locked circuit.
-    Attempts to capture the functionality of the oracle circuit
-    using a decision tree.
+
+    Attempts to capture the functionality of the oracle circuit using a
+    decision tree.
 
     Paramters
     ---------
@@ -267,6 +270,7 @@ def decision_tree_attack(c_or_cl, nsamples, key=None, verbose=True):
     -------
     dict of str:sklearn.tree.DecisionTreeClassifier
             The trained classifier for each output.
+
     """
     from sklearn.tree import DecisionTreeClassifier
 

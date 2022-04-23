@@ -1,7 +1,8 @@
 import unittest
 
 import circuitgraph as cg
-from logiclocking import locks, attacks
+
+from logiclocking import attacks, locks
 
 
 class TestAttacks(unittest.TestCase):

@@ -1,7 +1,8 @@
-import unittest
 import random
+import unittest
 
 import circuitgraph as cg
+
 from logiclocking import locks
 from logiclocking.utils import check_for_difference
 

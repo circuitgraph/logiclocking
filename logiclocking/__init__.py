@@ -1,7 +1,4 @@
-"""
-Python package `logiclocking` provides implementations of
-logic locking techniques using the `circuitgraph` package.
-"""
+"""Implementations of logic locking techniques and attacks."""
 
 from logiclocking.utils import (
     check_for_difference,

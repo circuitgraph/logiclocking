@@ -1,21 +1,22 @@
-from itertools import product, zip_longest
+"""Apply logic locks to circuits."""
 import random
-from random import randint, choice, choices, sample, shuffle
+from itertools import product, zip_longest
+from random import choice, choices, randint, sample, shuffle
 
 import circuitgraph as cg
-from pysat.solvers import Cadical
-from pysat.formula import IDPool
 from pysat.card import CardEnc
+from pysat.formula import IDPool
+from pysat.solvers import Cadical
 
 
 def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
     """
-    Locks a circuitgraph with Truly Random Logic Locking as outlined in
-    N. Limaye, E. Kalligeros, N. Karousos, I. G. Karybali and O. Sinanoglu,
+    Locks a circuitgraph with Truly Random Logic Locking.
+
+    Limaye, E. Kalligeros, N. Karousos, I. G. Karybali and O. Sinanoglu,
     "Thwarting All Logic Locking Attacks: Dishonest Oracle With Truly Random
-    Logic Locking," in IEEE Transactions on Computer-Aided Design of
-    Integrated Circuits and Systems, vol. 40, no. 9, pp. 1740-1753,
-    Sept. 2021.
+    Logic Locking," in IEEE Transactions on Computer-Aided Design of Integrated
+    Circuits and Systems, vol. 40, no. 9, pp. 1740-1753, Sept. 2021.
 
     Parameters
     ----------
@@ -40,9 +41,11 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
     seed: int
             Seed for the random selection of gates and shuffling of the key.
 
-    Returns:
+    Returns
+    -------
     circuitgraph.Circuit, dict of str:bool
             The locked circuit and the correct key value for each key input.
+
     """
     rng = random.Random(seed)
 
@@ -145,7 +148,8 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
 
 def xor_lock(c, keylen, key_prefix="key_", replacement=False):
     """
-    Locks a circuitgraph with a random xor lock as outlined in
+    Locks a circuitgraph with a random xor lock.
+
     J. A. Roy, F. Koushanfar and I. L. Markov, "Ending Piracy of Integrated
     Circuits," in Computer, vol. 43, no. 10, pp. 30-38, Oct. 2010.
 
@@ -163,6 +167,7 @@ def xor_lock(c, keylen, key_prefix="key_", replacement=False):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # create copy to lock
     cl = c.copy()
@@ -192,10 +197,13 @@ def xor_lock(c, keylen, key_prefix="key_", replacement=False):
 
 def mux_lock(c, keylen, avoid_loops=False, key_prefix="key_"):
     """
-    Locks a circuitgraph with a mux lock as outlined in
+    Locks a circuitgraph with a mux lock.
+
     J. Rajendran et al., "Fault Analysis-Based Logic Encryption," in IEEE
     Transactions on Computers, vol. 64, no. 2, pp. 410-424, Feb. 2015,
     doi: 10.1109/TC.2013.193.
+
+    Note that a random mux selection is used, not fault-based.
 
     Parameters
     ----------
@@ -208,6 +216,7 @@ def mux_lock(c, keylen, avoid_loops=False, key_prefix="key_"):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # create copy to lock
     cl = c.copy()
@@ -264,8 +273,9 @@ def mux_lock(c, keylen, avoid_loops=False, key_prefix="key_"):
 
 def random_lut_lock(c, num_gates, lut_width, gates=None):
     """
-    Locks a circuitgraph by replacing random gates with LUTs. This is kind of
-    like applying LUT-lock with no replacement strategy.
+    Locks a circuitgraph by replacing random gates with LUTs.
+
+    This is kind of like applying LUT-lock with no replacement strategy.
     (H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
     "LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
     ASIC-Hardware Protection," 2018 IEEE Computer Society Annual Symposium on
@@ -286,6 +296,7 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # create copy to lock
     cl = c.copy()
@@ -294,9 +305,7 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
     m = cg.logic.mux(2 ** lut_width)
 
     # randomly select gates
-    potential_gates = set(
-        g for g in cl.nodes() - cl.io() if len(cl.fanin(g)) <= lut_width
-    )
+    potential_gates = {g for g in cl.nodes() - cl.io() if len(cl.fanin(g)) <= lut_width}
     if gates:
         if len(gates) != num_gates:
             raise ValueError(
@@ -367,7 +376,8 @@ def lut_lock(
     key_prefix="key_",
 ):
     """
-    Locks a circuitgraph with NB2-MO-HSC LUT-lock as outlined in
+    Locks a circuitgraph with NB2-MO-HSC LUT-lock.
+
     H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
     "LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
     ASIC-Hardware Protection," 2018 IEEE Computer Society Annual Symposium on
@@ -399,6 +409,7 @@ def lut_lock(
     ------
     ValueError
             if there are not enough viable gates to lock.
+
     """
     # create copy to lock
     cl = c.copy()
@@ -534,10 +545,11 @@ def lut_lock(
 
 def tt_lock(c, width, target_output=None):
     """
-    Locks a circuitgraph with TTLock as outlined in
+    Locks a circuitgraph with TTLock.
+
     M. Yasin, A. Sengupta, B. Schafer, Y. Makris, O. Sinanoglu, and
-    J. Rajendran, “What to Lock?: Functional and Parametric Locking,” in
-    Great Lakes Symposium on VLSI, pp. 351–356, 2017.
+    J. Rajendran, “What to Lock?: Functional and Parametric Locking,”
+    in Great Lakes Symposium on VLSI, pp. 351–356, 2017.
 
     Parameters
     ----------
@@ -553,6 +565,7 @@ def tt_lock(c, width, target_output=None):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # create copy to lock
     cl = c.copy()
@@ -599,7 +612,8 @@ def tt_lock(c, width, target_output=None):
 
 def tt_lock_sen(c, width, nsamples=10):
     """
-    Locks a circuitgraph with TTLock-Sen as outlined in
+    Locks a circuitgraph with TTLock-Sen.
+
     Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi,
     “Sensitivity Analysis of Locked Circuits,” in
     Logic for Programming, Artificial Intelligence and Reasoning
@@ -616,6 +630,7 @@ def tt_lock_sen(c, width, nsamples=10):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # create copy to lock
     cl = c.copy()
@@ -633,7 +648,7 @@ def tt_lock_sen(c, width, nsamples=10):
         # build sensitivity circuit
         s = cg.tx.sensitivity_transform(c, o)
         startpoints = c.startpoints(o)
-        s_out = set(o for o in s.outputs() if "difference" in o)
+        s_out = {o for o in s.outputs() if "difference" in o}
 
         # est avg sensitivity
         total = 0
@@ -692,7 +707,8 @@ def tt_lock_sen(c, width, nsamples=10):
 
 def sfll_hd(c, width, hd, target_output=None):
     """
-    Locks a circuitgraph with SFLL-HD as outlined in
+    Locks a circuitgraph with SFLL-HD.
+
     Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
     Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
     Logic Locking: From Theory To Practice. In Proceedings of the 2017 ACM
@@ -715,6 +731,7 @@ def sfll_hd(c, width, hd, target_output=None):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # create copy to lock
     cl = c.copy()
@@ -784,11 +801,12 @@ def sfll_hd(c, width, hd, target_output=None):
 
 def sfll_flex(c, width, n, target_output=None):
     """
-    Locks a circuitgraph with SFLL-flex as outlined in
-    Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
-    Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
-    Logic Locking: From Theory To Practice. In Proceedings of the 2017 ACM
-    SIGSAC Conference on Computer and Communications Security (CCS ’17).
+    Locks a circuitgraph with SFLL-flex.
+
+    Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel,
+    Mohammed Ashraf, Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017.
+    Provably-Secure Logic Locking: From Theory To Practice. In Proceedings of
+    the 2017 ACM SIGSAC Conference on Computer and Communications Security.
     Association for Computing Machinery, New York, NY, USA, 1601–1618.
 
     Parameters
@@ -807,6 +825,7 @@ def sfll_flex(c, width, n, target_output=None):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # create copy to lock
     cl = c.copy()
@@ -862,7 +881,7 @@ def sfll_flex(c, width, n, target_output=None):
     return cl, key
 
 
-def connect_banyan(cl, swb_ins, swb_outs, bw):
+def _connect_banyan(cl, swb_ins, swb_outs, bw):
     I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
     for i in range(cg.utils.clog2(J)):
@@ -896,7 +915,7 @@ def connect_banyan(cl, swb_ins, swb_outs, bw):
                 cl.connect(swb_outs[out_i], swb_ins[in_i])
 
 
-def connect_banyan_bb(cl, swb_ins, swb_outs, bw):
+def _connect_banyan_bb(cl, swb_ins, swb_outs, bw):
     I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
     for i in range(cg.utils.clog2(J)):
@@ -949,12 +968,13 @@ def connect_banyan_bb(cl, swb_ins, swb_outs, bw):
 
 def full_lock(c, bw, lw, avoid_loops=False):
     """
-    Locks a circuitgraph with Full-Lock as outlined in
-    Hadi Mardani Kamali, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
-    2019. Full-Lock: Hard Distributions of SAT instances for Obfuscating
-    Circuits using Fully Configurable Logic and Routing Blocks. In Proceedings
-    of the 56th Annual Design Automation Conference 2019 (DAC ’19).
-    Association for Computing Machinery, New York, NY, USA, Article 89, 1–6.
+    Locks a circuitgraph with Full-Lock.
+
+    Hadi Mardani Kamali, Kimia Zamiri Azar, Houman Homayoun,
+    and Avesta Sasan. 2019. Full-Lock: Hard Distributions of SAT instances
+    for Obfuscating Circuits using Fully Configurable Logic and Routing
+    Blocks. In Proceedings of the 56th Annual Design Automation Conference
+    2019. Association for Computing Machinery, New York, NY, USA.
 
     Parameters
     ----------
@@ -972,11 +992,12 @@ def full_lock(c, bw, lw, avoid_loops=False):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # lock with luts
     if avoid_loops:
         gates = []
-        potential_gates = set(g for g in c.nodes() - c.io() if len(c.fanin(g)) <= lw)
+        potential_gates = {g for g in c.nodes() - c.io() if len(c.fanin(g)) <= lw}
         for _ in range(int(bw / lw)):
             gates.append(random.choice(list(potential_gates)))
             potential_gates -= c.transitive_fanin(gates[-1])
@@ -1011,7 +1032,7 @@ def full_lock(c, bw, lw, avoid_loops=False):
     # make connections
     swb_ins = [f"swb_{i//2}_in_{i%2}" for i in range(I * J * 2)]
     swb_outs = [f"swb_{i//2}_out_{i%2}" for i in range(I * J * 2)]
-    connect_banyan(cl, swb_ins, swb_outs, bw)
+    _connect_banyan(cl, swb_ins, swb_outs, bw)
 
     # get banyan io
     net_ins = swb_ins[:bw]
@@ -1056,15 +1077,10 @@ def full_lock(c, bw, lw, avoid_loops=False):
 
 def full_lock_mux(c, bw, lw):
     """
-    Locks a circuitgraph with Full-Lock as outlined in
-    Hadi Mardani Kamali, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
-    2019. Full-Lock: Hard Distributions of SAT instances for Obfuscating
-    Circuits using Fully Configurable Logic and Routing Blocks. In Proceedings
-    of the 56th Annual Design Automation Conference 2019 (DAC ’19).
-    Association for Computing Machinery, New York, NY, USA, Article 89, 1–6.
+    Locks a circuitgraph with a muxed-based model of Full-Lock.
 
-    But, uses muxes instead of the Banyan network, a relaxation that breaks symmetry
-    and simplifies the model substantially. This process is outlined in
+    Uses muxes instead of the Banyan network, a relaxation that breaks symmetry
+    and simplifies the model substantially.
     Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi
     Modeling Techniques for Logic Locking. In Proceedings
     of the International Conference on Computer Aided Design 2020 (ICCAD-39).
@@ -1083,6 +1099,7 @@ def full_lock_mux(c, bw, lw):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # first generate banyan, to get a valid mapping for the key
     b = cg.Circuit()
@@ -1111,7 +1128,7 @@ def full_lock_mux(c, bw, lw):
     # make connections
     swb_ins = [f"swb_{i//2}_in_{i%2}" for i in range(I * J * 2)]
     swb_outs = [f"swb_{i//2}_out_{i%2}" for i in range(I * J * 2)]
-    connect_banyan(b, swb_ins, swb_outs, bw)
+    _connect_banyan(b, swb_ins, swb_outs, bw)
 
     # get banyan io
     net_ins = swb_ins[:bw]
@@ -1181,7 +1198,8 @@ def full_lock_mux(c, bw, lw):
 
 def inter_lock(c, bw, reduced_swb=False):
     """
-    Locks a circuitgraph with InterLock as outlined in
+    Locks a circuitgraph with InterLock.
+
     Kamali, Hadi Mardani, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
     "Interlock: An intercorrelated logic and routing locking."
     In 2020 IEEE/ACM International Conference On Computer Aided Design (ICCAD),
@@ -1203,6 +1221,7 @@ def inter_lock(c, bw, reduced_swb=False):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     cl = c.copy()
     cg.lint(cl)
@@ -1290,7 +1309,7 @@ def inter_lock(c, bw, reduced_swb=False):
     # make connections
     swb_ins = [f"swb_{i//2}.in_{i%2}" for i in range(I * J * 2)]
     swb_outs = [f"swb_{i//2}.out_{i%2}" for i in range(I * J * 2)]
-    connect_banyan_bb(cl, swb_ins, swb_outs, bw)
+    _connect_banyan_bb(cl, swb_ins, swb_outs, bw)
 
     # generate key
     # In the example from the paper, the paths in a SWB directly from an
@@ -1365,10 +1384,11 @@ def inter_lock(c, bw, reduced_swb=False):
 
 def lebl(c, bw, ng):
     """
-    Locks a circuitgraph with Logic-Enhanced Banyan Locking as outlined in
-    Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi
-    Modeling Techniques for Logic Locking. In Proceedings
-    of the International Conference on Computer Aided Design 2020 (ICCAD-39).
+    Locks a circuitgraph with Logic-Enhanced Banyan Locking.
+
+    Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi Modeling Techniques
+    for Logic Locking. In Proceedings of the International Conference on
+    Computer Aided Design 2020 (ICCAD-39).
 
     Parameters
     ----------
@@ -1383,6 +1403,7 @@ def lebl(c, bw, ng):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
+
     """
     # create copy to lock
     cl = c.copy()
@@ -1414,7 +1435,7 @@ def lebl(c, bw, ng):
     # make connections
     swb_ins = [f"swb_{i//2}_in_{i%2}" for i in range(I * J * 2)]
     swb_outs = [f"swb_{i//2}_out_{i%2}" for i in range(I * J * 2)]
-    connect_banyan(cl, swb_ins, swb_outs, bw)
+    _connect_banyan(cl, swb_ins, swb_outs, bw)
 
     # get banyan io
     net_ins = swb_ins[:bw]
@@ -1629,20 +1650,18 @@ def lebl(c, bw, ng):
             if j != k:
                 t = choice(
                     tuple(
-                        set(
-                            [
-                                "buf",
-                                "or",
-                                "nor",
-                                "and",
-                                "nand",
-                                "not",
-                                "xor",
-                                "xnor",
-                                "0",
-                                "1",
-                            ]
-                        )
+                        {
+                            "buf",
+                            "or",
+                            "nor",
+                            "and",
+                            "nand",
+                            "not",
+                            "xor",
+                            "xnor",
+                            "0",
+                            "1",
+                        }
                         - mux_gate_types
                     )
                 )

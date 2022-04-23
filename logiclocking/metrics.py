@@ -1,3 +1,4 @@
+"""Cacluate logic-locking metrics."""
 from random import random
 from statistics import mean
 
@@ -5,11 +6,12 @@ import circuitgraph as cg
 
 
 def corruptibility(cl, key):
+    """Apprixmate corruptability of a locked circuit for a specific key."""
     # set up miter
     ins = set(cl.startpoints() - key.keys())
     m = cg.miter(cl, startpoints=ins)
     set_key = {f"c0_{k}": v for k, v in key.items()}
-    independent_set = set(f"c1_{k}" for k in key) | ins
+    independent_set = {f"c1_{k}" for k in key} | ins
 
     # run approx
     errors = cg.approx_model_count(m, {**set_key, "sat": True}, independent_set)
@@ -18,6 +20,7 @@ def corruptibility(cl, key):
 
 
 def key_corruption(cl, key, attack_key):
+    """Approximate corruption between two keys."""
     # set up miter
     ins = set(cl.startpoints() - key.keys())
     m = cg.miter(cl, startpoints=ins)
@@ -31,6 +34,7 @@ def key_corruption(cl, key, attack_key):
 
 
 def min_corruption(cl, key, e=0.1, min_samples=10, tol=0.1):
+    """Approximate the minimum corruption."""
     # find total errors
     cor = corruptibility(cl, key)
 
@@ -49,6 +53,7 @@ def min_corruption(cl, key, e=0.1, min_samples=10, tol=0.1):
 
 
 def avg_avg_sensitivity(cl, key={}):
+    """Get the average average sensitivity under a given key."""
     # set key
     cl_key = cl.copy()
     for k, v in key.items():

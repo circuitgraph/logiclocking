@@ -1,7 +1,6 @@
 import setuptools
 
-
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -25,5 +24,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=["circuitgraph"],
+    install_requires=["circuitgraph>=0.2.0"],
 )
