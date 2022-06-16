@@ -25,6 +25,8 @@ cg.to_file(cl, "c880_locked.v")
 write_key(k, "c880_locked_key.txt")
 ```
 
+The documentation can be found [here](https://circuitgraph.github.io/logiclocking/).
+
 ## Installing
 
 Logiclocking is not yet available on PyPi, so you must install locally.
