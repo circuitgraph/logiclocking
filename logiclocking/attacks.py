@@ -17,7 +17,7 @@ def miter_attack(
     key_cons=None,
     unroll_cyclic=True,
     verbose=True,
-    code_on_error=True,
+    code_on_error=False,
 ):
     """
     Launch a miter-based sat attack on a locked circuit.

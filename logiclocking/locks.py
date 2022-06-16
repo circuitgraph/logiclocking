@@ -61,12 +61,6 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
         raise ValueError(f"Unusable s1_s2_ratio: {s1_s2_ratio}")
     s2 = keylen - s1
 
-    # NOTE: The algorithm in the paper selects s1a/s1b/s2a/s2b sizes using
-    #       a "rand_dist" function on s1/s2. Alternatively, we could sample
-    #       a new bernouli variable for each gate, which would result in
-    #       much more evenly-sized distributions. Going with the paper
-    #       implementation for now... They also don't specify a specific
-    #       type of distribution, so defaulting to uniform
     s1a = rng.randint(0, s1)
     s1b = s1 - s1a
 
@@ -547,6 +541,12 @@ def tt_lock(c, width, target_output=None):
     """
     Locks a circuitgraph with TTLock.
 
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
+
     M. Yasin, A. Sengupta, B. Schafer, Y. Makris, O. Sinanoglu, and
     J. Rajendran, “What to Lock?: Functional and Parametric Locking,”
     in Great Lakes Symposium on VLSI, pp. 351–356, 2017.
@@ -709,6 +709,12 @@ def sfll_hd(c, width, hd, target_output=None):
     """
     Locks a circuitgraph with SFLL-HD.
 
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
+
     Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
     Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
     Logic Locking: From Theory To Practice. In Proceedings of the 2017 ACM
@@ -802,6 +808,12 @@ def sfll_hd(c, width, hd, target_output=None):
 def sfll_flex(c, width, n, target_output=None):
     """
     Locks a circuitgraph with SFLL-flex.
+
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
 
     Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel,
     Mohammed Ashraf, Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017.
@@ -1081,10 +1093,10 @@ def full_lock_mux(c, bw, lw):
 
     Uses muxes instead of the Banyan network, a relaxation that breaks symmetry
     and simplifies the model substantially.
+
     Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi
     Modeling Techniques for Logic Locking. In Proceedings
     of the International Conference on Computer Aided Design 2020 (ICCAD-39).
-
 
     Parameters
     ----------
