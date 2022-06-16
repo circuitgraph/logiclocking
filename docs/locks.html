@@ -1,0 +1,3845 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>logiclocking.locks API documentation</title>
+<meta name="description" content="Apply logic locks to circuits." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>logiclocking.locks</code></h1>
+</header>
+<section id="section-intro">
+<p>Apply logic locks to circuits.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Apply logic locks to circuits.&#34;&#34;&#34;
+import random
+from itertools import product, zip_longest
+from random import choice, choices, randint, sample, shuffle
+
+import circuitgraph as cg
+from pysat.card import CardEnc
+from pysat.formula import IDPool
+from pysat.solvers import Cadical
+
+
+def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with Truly Random Logic Locking.
+
+    Limaye, E. Kalligeros, N. Karousos, I. G. Karybali and O. Sinanoglu,
+    &#34;Thwarting All Logic Locking Attacks: Dishonest Oracle With Truly Random
+    Logic Locking,&#34; in IEEE Transactions on Computer-Aided Design of Integrated
+    Circuits and Systems, vol. 40, no. 9, pp. 1740-1753, Sept. 2021.
+
+    Parameters
+    ----------
+    c: circuitgraph.Circuit
+            The circuit to lock.
+    keylen: int
+            The number of key bits to add.
+    s1_s2_ratio: int or str
+            The ratio between number of key gate locations locked where an
+            inverter exists in the original design (s1) or where an inverter
+            does not exist in the original design (s2). The paper leaves this
+            value at 1 (meaning s1=s2=keylen/2), but they note that this
+            could be adjusted based on the ratio of the locations where there
+            is an inverter in the original netlist. Setting this parameter
+            to the string &#34;infer&#34; will do this adjustment. I.e.
+            s1 = keylen*r, s2 = keylen*(1-r), where r is the number of
+            inverters in the circuit divided by the total number of gates.
+    shuffle_key: bool
+            By default, the key input labels are shuffled at the end of the
+            algorithm so the labelling does not reveal which portion of the
+            algorithm the key input was added during.
+    seed: int
+            Seed for the random selection of gates and shuffling of the key.
+
+    Returns
+    -------
+    circuitgraph.Circuit, dict of str:bool
+            The locked circuit and the correct key value for each key input.
+
+    &#34;&#34;&#34;
+    rng = random.Random(seed)
+
+    cl = c.copy()
+
+    if keylen % 2 != 0:
+        raise NotImplementedError
+    if s1_s2_ratio == &#34;infer&#34;:
+        raise NotImplementedError
+
+    s1 = int((keylen // 2) * s1_s2_ratio)
+    if s1 &gt; keylen:
+        raise ValueError(f&#34;Unusable s1_s2_ratio: {s1_s2_ratio}&#34;)
+    s2 = keylen - s1
+
+    s1a = rng.randint(0, s1)
+    s1b = s1 - s1a
+
+    s2a = rng.randint(0, s2)
+    s2b = s2 - s2a
+
+    inv_gates = list(c.filter_type(&#34;not&#34;))
+    rng.shuffle(inv_gates)
+    rem_gates = list(
+        c.nodes()
+        - c.io()
+        - c.filter_type((&#34;not&#34;, &#34;bb_input&#34;, &#34;bb_output&#34;, &#34;0&#34;, &#34;1&#34;, &#34;x&#34;))
+    )
+    rng.shuffle(rem_gates)
+
+    j = 0
+    k = {}
+    # Replace existing inv_gates with XOR key-gates
+    for _ in range(s1a):
+        sel_gate = inv_gates.pop()
+        ki = f&#34;key_{j}&#34;
+        cl.add(ki, &#34;input&#34;)
+        k[ki] = True
+        cl.set_type(sel_gate, &#34;xor&#34;)
+        cl.connect(ki, sel_gate)
+        j += 1
+
+    # Add XOR key-gates before existing inv_gates
+    for _ in range(s1b):
+        sel_gate = inv_gates.pop()
+        ki = f&#34;key_{j}&#34;
+        cl.add(ki, &#34;input&#34;)
+        k[ki] = False
+        inv_fanin = cl.fanin(sel_gate)
+        assert len(inv_fanin) == 1
+        cl.disconnect(inv_fanin, sel_gate)
+        cl.add(f&#34;key_gate_{j}&#34;, &#34;xor&#34;, fanin=inv_fanin | {ki}, fanout=sel_gate)
+        j += 1
+
+    # Add XOR key-gates and INV gates after existing rem_gates
+    for _ in range(s2a):
+        sel_gate = rem_gates.pop()
+        ki = f&#34;key_{j}&#34;
+        cl.add(ki, &#34;input&#34;)
+        k[ki] = True
+        sel_fanout = cl.fanout(sel_gate)
+        cl.disconnect(sel_gate, sel_fanout)
+        cl.add(f&#34;key_gate_{j}&#34;, &#34;xor&#34;, fanin=(sel_gate, ki))
+        cl.add(f&#34;key_inv_{j}&#34;, &#34;not&#34;, fanin=f&#34;key_gate_{j}&#34;, fanout=sel_fanout)
+        j += 1
+
+    # Add XOR key-gates after existing rem_gates
+    for _ in range(s2b):
+        sel_gate = rem_gates.pop()
+        ki = f&#34;key_{j}&#34;
+        cl.add(ki, &#34;input&#34;)
+        k[ki] = False
+        sel_fanout = cl.fanout(sel_gate)
+        cl.disconnect(sel_gate, sel_fanout)
+        cl.add(f&#34;key_gate_{j}&#34;, &#34;xor&#34;, fanin=(sel_gate, ki), fanout=sel_fanout)
+        j += 1
+
+    # Shuffle keys
+    if shuffle_key:
+        new_order = list(range(keylen))
+        rng.shuffle(new_order)
+        shuffled_k = {}
+        intermediate_mapping = {}
+        final_mapping = {}
+        for old_idx, new_idx in enumerate(new_order):
+            shuffled_k[f&#34;key_{new_idx}&#34;] = k[f&#34;key_{old_idx}&#34;]
+            intermediate_mapping[f&#34;key_{old_idx}&#34;] = f&#34;key_{old_idx}_temp&#34;
+            final_mapping[f&#34;key_{old_idx}_temp&#34;] = f&#34;key_{new_idx}&#34;
+        cl.relabel(intermediate_mapping)
+        cl.relabel(final_mapping)
+        return cl, shuffled_k
+    return cl, k
+
+
+def xor_lock(c, keylen, key_prefix=&#34;key_&#34;, replacement=False):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with a random xor lock.
+
+    J. A. Roy, F. Koushanfar and I. L. Markov, &#34;Ending Piracy of Integrated
+    Circuits,&#34; in Computer, vol. 43, no. 10, pp. 30-38, Oct. 2010.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    keylen: int
+            the number of bits in the key
+    replacement: bool
+            If True, the same line can be locked twice (resulting in a chain
+            of key gates)
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # randomly select gates to lock
+    if replacement:
+        gates = choices(tuple(cl.nodes() - cl.outputs()), k=keylen)
+    else:
+        gates = sample(tuple(cl.nodes() - cl.outputs()), keylen)
+
+    # insert key gates
+    key = {}
+    for i, gate in enumerate(gates):
+        # select random key value
+        key[f&#34;{key_prefix}{i}&#34;] = choice([True, False])
+
+        # create xor/xnor,input
+        gate_type = &#34;xnor&#34; if key[f&#34;{key_prefix}{i}&#34;] else &#34;xor&#34;
+        fanout = cl.fanout(gate)
+        cl.disconnect(gate, fanout)
+        cl.add(f&#34;key_gate_{i}&#34;, gate_type, fanin=gate, fanout=fanout)
+        cl.add(f&#34;{key_prefix}{i}&#34;, &#34;input&#34;, fanout=f&#34;key_gate_{i}&#34;)
+
+    cg.lint(cl)
+    return cl, key
+
+
+def mux_lock(c, keylen, avoid_loops=False, key_prefix=&#34;key_&#34;):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with a mux lock.
+
+    J. Rajendran et al., &#34;Fault Analysis-Based Logic Encryption,&#34; in IEEE
+    Transactions on Computers, vol. 64, no. 2, pp. 410-424, Feb. 2015,
+    doi: 10.1109/TC.2013.193.
+
+    Note that a random mux selection is used, not fault-based.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    keylen: int
+            the number of bits in the key.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # get 2:1 mux
+    m = cg.logic.mux(2)
+
+    # randomly select gates
+    gates = sample(tuple(cl.nodes() - cl.outputs()), keylen)
+    if avoid_loops:
+        decoy_gates = set()
+    else:
+        decoy_gates = sample(tuple(cl.nodes() - cl.outputs()), keylen)
+
+    # insert key gates
+    key = {}
+    for i, gate in enumerate(gates):
+        # select random key value
+        key_val = choice([True, False])
+
+        if avoid_loops:
+            decoy_gate = choice(
+                tuple(
+                    c.nodes()
+                    - c.io()
+                    - set(gates)
+                    - cl.transitive_fanout(gate)
+                    - decoy_gates
+                )
+            )
+            decoy_gates.add(decoy_gate)
+        else:
+            decoy_gate = decoy_gates[i]
+
+        # create and connect mux
+        fanout = cl.fanout(gate)
+        cl.disconnect(gate, fanout)
+        cl.add_subcircuit(m, f&#34;mux_{i}&#34;)
+        cl.connect(f&#34;mux_{i}_out&#34;, fanout)
+        key_in = cl.add(f&#34;{key_prefix}{i}&#34;, &#34;input&#34;, fanout=f&#34;mux_{i}_sel_0&#34;, uid=True)
+        key[key_in] = key_val
+        if key_val:
+            cl.connect(gate, f&#34;mux_{i}_in_1&#34;)
+            cl.connect(decoy_gate, f&#34;mux_{i}_in_0&#34;)
+        else:
+            cl.connect(gate, f&#34;mux_{i}_in_0&#34;)
+            cl.connect(decoy_gate, f&#34;mux_{i}_in_1&#34;)
+
+    cg.lint(cl)
+    if avoid_loops and cl.is_cyclic():
+        raise ValueError(&#34;Locked circuit is cyclic&#34;)
+    return cl, key
+
+
+def random_lut_lock(c, num_gates, lut_width, gates=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph by replacing random gates with LUTs.
+
+    This is kind of like applying LUT-lock with no replacement strategy.
+    (H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
+    &#34;LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
+    ASIC-Hardware Protection,&#34; 2018 IEEE Computer Society Annual Symposium on
+    VLSI (ISVLSI), Hong Kong, 2018, pp. 405-410.)
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    num_gates: int
+            the number of gates to lock.
+    lut_width: int
+            LUT width, defines maximum fanin of locked gates.
+    gates: list of str
+            The gates to lock. If not provided, will be randomly sampled
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # parse mux
+    m = cg.logic.mux(2 ** lut_width)
+
+    # randomly select gates
+    potential_gates = {g for g in cl.nodes() - cl.io() if len(cl.fanin(g)) &lt;= lut_width}
+    if gates:
+        if len(gates) != num_gates:
+            raise ValueError(
+                f&#34;Got &#39;num_gates&#39; of {num_gates} but length of &#34;
+                f&#34;&#39;gates&#39; is {len(gates)}&#34;
+            )
+        if any(len(cl.fanin(g)) &gt; lut_width for g in gates):
+            raise ValueError(&#34;cannot lock a gate with fanin greater than &#34; &#34;lut_width&#34;)
+        if any(g in cl.io() for g in gates):
+            raise ValueError(&#34;cannot lock an input/output gate&#34;)
+    else:
+        gates = sample(tuple(potential_gates), num_gates)
+    potential_gates -= set(gates)
+    potential_gates -= cl.transitive_fanout(gates)
+
+    # insert key gates
+    key = {}
+    for i, gate in enumerate(gates):
+
+        fanout = list(cl.fanout(gate))
+        fanin = list(cl.fanin(gate))
+        try:
+            padding = sample(
+                tuple(potential_gates - cl.fanin(gate)), lut_width - len(fanin)
+            )
+        except ValueError as e:
+            raise ValueError(&#34;Could not find enough viable gates for padding&#34;) from e
+
+        # create LUT
+        cl.add_subcircuit(m, f&#34;lut_{i}&#34;)
+
+        # connect keys
+        for j, vs in enumerate(product([False, True], repeat=len(fanin + padding))):
+            assumptions = {
+                s: v for s, v in zip(fanin + padding, vs[::-1]) if s in fanin
+            }
+            key_in = cl.add(
+                f&#34;key_{i*2**lut_width+j}&#34;, &#34;input&#34;, fanout=f&#34;lut_{i}_in_{j}&#34;, uid=True
+            )
+            result = cg.sat.solve(c, assumptions)
+            if not result:
+                key[key_in] = False
+            else:
+                key[key_in] = result[gate]
+
+        # connect out
+        cl.disconnect(gate, fanout)
+        cl.connect(f&#34;lut_{i}_out&#34;, fanout)
+
+        # connect sel
+        for j, f in enumerate(fanin + padding):
+            cl.connect(f, f&#34;lut_{i}_sel_{j}&#34;)
+
+        # delete gate
+        cl.remove(gate)
+        cl = cg.tx.relabel(cl, {f&#34;lut_{i}_out&#34;: gate})
+
+    cg.lint(cl)
+    return cl, key
+
+
+def lut_lock(
+    c,
+    num_gates,
+    count_keys=False,
+    skip_fi1=True,
+    rank_by_shared_fanin=False,
+    key_prefix=&#34;key_&#34;,
+):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with NB2-MO-HSC LUT-lock.
+
+    H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
+    &#34;LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
+    ASIC-Hardware Protection,&#34; 2018 IEEE Computer Society Annual Symposium on
+    VLSI (ISVLSI), Hong Kong, 2018, pp. 405-410.
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    num_gates: int
+            The number of gates to lock.
+    count_keys: bool
+            If true, continue locking until at least `num_gates` keys are
+            added instead of `num_gates` gates.
+    skip_fi1: int
+            If True, nodes with a fanin of 1 (i.e. buf or inv) will not
+            be considered for locking.
+    rank_by_shared_fanin: bool
+            If True, the output with the least shared fanin with other outputs
+            will be selected for locking first. By default, the output with
+            the least amount of total fanin is selected for locking first.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    Raises
+    ------
+    ValueError
+            if there are not enough viable gates to lock.
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    def calc_skew(gate, cl):
+        d = {False: 0, True: 0}
+        fanin = list(cl.fanin(gate))
+
+        # create subcircuit containing just gate for simulation
+        simc = cg.Circuit()
+        for i in fanin:
+            simc.add(i, &#34;input&#34;)
+        simc.add(gate, cl.type(gate), fanin=fanin)
+
+        # simulate
+        for i, vs in enumerate(product([False, True], repeat=len(fanin))):
+            assumptions = dict(zip(fanin, vs[::-1]))
+            result = cg.sat.solve(simc, assumptions)
+            if not result:
+                d[False] += 1
+            else:
+                d[result[gate]] += 1
+        num_combos = 2 ** len(fanin)
+        return abs(d[False] / num_combos - d[True] / num_combos)
+
+    def replace_lut(gate, cl):
+        key = {}
+        m = cg.logic.mux(2 ** len(cl.fanin(gate)))
+        fanout = list(cl.fanout(gate))
+        fanin = list(cl.fanin(gate))
+
+        # create LUT
+        cl.add_subcircuit(m, f&#34;lut_{gate}&#34;)
+
+        # create subcircuit containing just gate for simulation
+        simc = cg.Circuit()
+        for i in fanin:
+            simc.add(i, &#34;input&#34;)
+        simc.add(gate, cl.type(gate), fanin=fanin)
+
+        # connect keys
+        for i, vs in enumerate(product([False, True], repeat=len(fanin))):
+            assumptions = dict(zip(fanin, vs[::-1]))
+            cl.add(f&#34;{key_prefix}{gate}_{i}&#34;, &#34;input&#34;, fanout=f&#34;lut_{gate}_in_{i}&#34;)
+            result = cg.sat.solve(simc, assumptions)
+            if not result:
+                key[f&#34;{key_prefix}{gate}_{i}&#34;] = False
+            else:
+                key[f&#34;{key_prefix}{gate}_{i}&#34;] = result[gate]
+
+        # connect out
+        cl.disconnect(gate, fanout)
+        cl.connect(f&#34;lut_{gate}_out&#34;, fanout)
+
+        # connect sel
+        for i, f in enumerate(fanin):
+            cl.connect(f, f&#34;lut_{gate}_sel_{i}&#34;)
+
+        # delete gate
+        cl.remove(gate)
+        return key, [f&#34;lut_{gate}_{n}&#34; for n in m.nodes()], f&#34;lut_{gate}_out&#34;
+
+    def continue_locking(locked_gates, num_gates, keys, count_keys):
+        if count_keys:
+            return len(keys) &lt; num_gates
+        return locked_gates &lt; num_gates
+
+    locked_gates = 0
+    outputs = list(cl.outputs())
+    if rank_by_shared_fanin:
+
+        def rank_output(x):
+            other_outputs = [o for o in outputs if o != x]
+            other_fanin = cl.transitive_fanin(other_outputs)
+            curr_fanin = cl.transitive_fanin(x)
+            return len(curr_fanin &amp; other_fanin)
+
+    else:
+
+        def rank_output(x):
+            return len(cl.transitive_fanin(x))
+
+    outputs.sort(key=rank_output)
+    candidates = []
+    forbidden_nodes = set()
+    keys = {}
+    while continue_locking(locked_gates, num_gates, keys, count_keys):
+        if not candidates:
+            outputs = [o for o in outputs if o not in forbidden_nodes]
+            try:
+                candidates.append(outputs.pop(0))
+            except IndexError as e:
+                raise ValueError(
+                    &#34;Ran out of candidate gates at &#34; f&#34;{locked_gates} gates.&#34;
+                ) from e
+        else:
+            candidate = candidates.pop(0)
+            candidate_is_output = cl.is_output(candidate)
+            children = cl.fanin(candidate)
+            if candidate in forbidden_nodes:
+                candidates += [g for g in children if g not in forbidden_nodes]
+                continue
+            forbidden_nodes.add(candidate)
+            if len(children) == 0:
+                continue
+            if skip_fi1 and len(children) == 1:
+                child = children.pop()
+                if child not in forbidden_nodes | set(candidates):
+                    candidates.insert(0, child)
+                continue
+            key, nodes, output_to_relabel = replace_lut(candidate, cl)
+            keys.update(key)
+            forbidden_nodes.update(nodes)
+            cl = cg.tx.relabel(cl, {output_to_relabel: candidate})
+            if candidate_is_output:
+                cl.set_output(candidate)
+            for g1 in children:
+                forbidden_nodes.add(g1)
+                for g2 in cl.fanin(g1):
+                    if g2 not in forbidden_nodes | set(candidates):
+                        candidates.append(g2)
+            # Sort by least number of outputs in fanout cone, then most skew
+            candidates.sort(
+                key=lambda x: (
+                    len(cl.transitive_fanout(x) &amp; cl.outputs()),
+                    -calc_skew(x, cl),
+                )
+            )
+            locked_gates += 1
+
+    return cl, keys
+
+
+def tt_lock(c, width, target_output=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with TTLock.
+
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
+
+    M. Yasin, A. Sengupta, B. Schafer, Y. Makris, O. Sinanoglu, and
+    J. Rajendran, “What to Lock?: Functional and Parametric Locking,”
+    in Great Lakes Symposium on VLSI, pp. 351–356, 2017.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            the minimum fanin of the gates to lock.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    if len(c.inputs()) &lt; width:
+        raise ValueError(f&#34;Not enough inputs to lock with width &#39;{width}&#39;&#34;)
+
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) &lt; width:
+        target_inputs |= set(
+            random.sample(list(cl.inputs() - target_inputs), width - len(target_inputs))
+        )
+    target_inputs = list(target_inputs)
+
+    # create key
+    key = {f&#34;key_{i}&#34;: random.choice([True, False]) for i in range(width)}
+
+    # connect comparators
+    cl.add(&#34;flip_out&#34;, &#34;and&#34;)
+    cl.add(&#34;restore_out&#34;, &#34;and&#34;)
+    for i, inp in enumerate(random.sample(target_inputs, width)):
+        cl.add(f&#34;key_{i}&#34;, &#34;input&#34;)
+        cl.add(f&#34;hardcoded_key_{i}&#34;, &#34;1&#34; if key[f&#34;key_{i}&#34;] else &#34;0&#34;)
+        cl.add(f&#34;restore_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;key_{i}&#34;, inp], fanout=&#34;restore_out&#34;)
+        cl.add(
+            f&#34;flip_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;hardcoded_key_{i}&#34;, inp], fanout=&#34;flip_out&#34;
+        )
+
+    # flip output
+    old_out = cl.uid(f&#34;{target_output}_pre_lock&#34;)
+    cl = cg.tx.relabel(cl, {target_output: old_out})
+    cl.set_output(old_out, False)
+    cl.add(
+        target_output, &#34;xor&#34;, fanin=[old_out, &#34;restore_out&#34;, &#34;flip_out&#34;], output=True
+    )
+
+    cg.lint(cl)
+    return cl, key
+
+
+def tt_lock_sen(c, width, nsamples=10):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with TTLock-Sen.
+
+    Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi,
+    “Sensitivity Analysis of Locked Circuits,” in
+    Logic for Programming, Artificial Intelligence and Reasoning
+    (LPAR-23), pp. 483-497. EPiC Series in Computing 73, EasyChair.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            the minimum fanin of the gates to lock.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # find output with large enough fanin
+    potential_outs = [o for o in cl.outputs() if len(cl.startpoints(o)) &gt;= width]
+    if not potential_outs:
+        raise ValueError(f&#34;Not enough inputs to lock with width &#39;{width}&#39;&#34;)
+
+    # find average sensitivities
+    A = {}
+    N = {}
+    S = {}
+    for o in potential_outs:
+        # build sensitivity circuit
+        s = cg.tx.sensitivity_transform(c, o)
+        startpoints = c.startpoints(o)
+        s_out = {o for o in s.outputs() if &#34;difference&#34; in o}
+
+        # est avg sensitivity
+        total = 0
+        for i in range(nsamples):
+            input_val = {i: randint(0, 1) for i in startpoints}
+            model = cg.sat.solve(s, input_val)
+            sen = sum(model[o] for o in s_out)
+            total += sen
+        A[o] = int(total / nsamples)
+        N[o] = len(startpoints)
+        S[o] = s
+
+    # find output + input value with closest to avg sen
+    def find_input():
+        b = 0
+        while b &lt; max(N.values()):
+            for o in potential_outs:
+                upper = min(N[o], int(N[o] - A[o] + b))
+                lower = max(0, int(N[o] - A[o] - b))
+                us = cg.utils.int_to_bin(upper, cg.utils.clog2(N[o]))
+                ls = cg.utils.int_to_bin(lower, cg.utils.clog2(N[o]))
+                for sv in [us, ls]:
+                    model = cg.sat.solve(
+                        S[o], {f&#34;sen_out_{i}&#34;: v for i, v in enumerate(sv)}
+                    )
+                    if model:
+                        out = o
+                        startpoints = c.startpoints(o)
+
+                        key = {f&#34;key_{i}&#34;: model[n] for i, n in enumerate(startpoints)}
+                        return key, startpoints, out
+            b += 1
+
+    key, startpoints, out = find_input()
+
+    # connect comparators
+    cl.add(&#34;flip_out&#34;, &#34;and&#34;)
+    cl.add(&#34;restore_out&#34;, &#34;and&#34;)
+    for i, inp in enumerate(startpoints):
+        cl.add(f&#34;key_{i}&#34;, &#34;input&#34;)
+        cl.add(f&#34;hardcoded_key_{i}&#34;, &#34;1&#34; if key[f&#34;key_{i}&#34;] else &#34;0&#34;)
+        cl.add(f&#34;restore_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;key_{i}&#34;, inp], fanout=&#34;restore_out&#34;)
+        cl.add(
+            f&#34;flip_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;hardcoded_key_{i}&#34;, inp], fanout=&#34;flip_out&#34;
+        )
+
+    # flip output
+    old_out = cl.uid(f&#34;{out}_pre_lock&#34;)
+    cl = cg.tx.relabel(cl, {out: old_out})
+    cl.set_output(old_out, False)
+    cl.add(out, &#34;xor&#34;, fanin=[old_out, &#34;restore_out&#34;, &#34;flip_out&#34;], output=True)
+
+    cg.lint(cl)
+    return cl, key
+
+
+def sfll_hd(c, width, hd, target_output=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with SFLL-HD.
+
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
+
+    Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
+    Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
+    Logic Locking: From Theory To Practice. In Proceedings of the 2017 ACM
+    SIGSAC Conference on Computer and Communications Security (CCS ’17).
+    Association for Computing Machinery, New York, NY, USA, 1601–1618.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            key width, also the minimum fanin of the gates to lock.
+    hd: int
+            the hamming distance to lock with, as explained in the paper.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # parse popcount
+    p = cg.logic.popcount(width)
+
+    if len(c.inputs()) &lt; width:
+        raise ValueError(f&#34;Not enough inputs to lock with width &#39;{width}&#39;&#34;)
+
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) &lt; width:
+        target_inputs |= set(
+            random.sample(list(cl.inputs() - target_inputs), width - len(target_inputs))
+        )
+    target_inputs = list(target_inputs)
+
+    # create key
+    key = {f&#34;key_{i}&#34;: random.choice([True, False]) for i in range(width)}
+
+    # instantiate and connect hd circuits
+    cl.add_subcircuit(p, &#34;flip_pop&#34;)
+    cl.add_subcircuit(p, &#34;restore_pop&#34;)
+
+    # connect inputs
+    for i, inp in enumerate(random.sample(target_inputs, width)):
+        cl.add(f&#34;key_{i}&#34;, &#34;input&#34;)
+        cl.add(f&#34;hardcoded_key_{i}&#34;, &#34;1&#34; if key[f&#34;key_{i}&#34;] else &#34;0&#34;)
+        cl.add(f&#34;restore_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;key_{i}&#34;, inp])
+        cl.add(f&#34;flip_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;hardcoded_key_{i}&#34;, inp])
+        cl.connect(f&#34;flip_xor_{i}&#34;, f&#34;flip_pop_in_{i}&#34;)
+        cl.connect(f&#34;restore_xor_{i}&#34;, f&#34;restore_pop_in_{i}&#34;)
+
+    # connect outputs
+    cl.add(&#34;flip_out&#34;, &#34;and&#34;)
+    cl.add(&#34;restore_out&#34;, &#34;and&#34;)
+    for i, v in enumerate(format(hd, f&#34;0{cg.utils.clog2(width)+1}b&#34;)[::-1]):
+        cl.add(f&#34;hd_{i}&#34;, v)
+        cl.add(
+            f&#34;restore_out_xnor_{i}&#34;,
+            &#34;xnor&#34;,
+            fanin=[f&#34;hd_{i}&#34;, f&#34;restore_pop_out_{i}&#34;],
+            fanout=&#34;restore_out&#34;,
+        )
+        cl.add(
+            f&#34;flip_out_xnor_{i}&#34;,
+            &#34;xnor&#34;,
+            fanin=[f&#34;hd_{i}&#34;, f&#34;flip_pop_out_{i}&#34;],
+            fanout=&#34;flip_out&#34;,
+        )
+
+    # flip output
+    old_out = cl.uid(f&#34;{target_output}_pre_lock&#34;)
+    cl = cg.tx.relabel(cl, {target_output: old_out})
+    cl.set_output(old_out, False)
+    cl.add(
+        target_output, &#34;xor&#34;, fanin=[old_out, &#34;restore_out&#34;, &#34;flip_out&#34;], output=True
+    )
+
+    cg.lint(cl)
+    return cl, key
+
+
+def sfll_flex(c, width, n, target_output=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with SFLL-flex.
+
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
+
+    Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel,
+    Mohammed Ashraf, Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017.
+    Provably-Secure Logic Locking: From Theory To Practice. In Proceedings of
+    the 2017 ACM SIGSAC Conference on Computer and Communications Security.
+    Association for Computing Machinery, New York, NY, USA, 1601–1618.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            the minimum fanin of the gates to lock.
+    n: int
+            number of input patterns to lock.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) &lt; width:
+        target_inputs |= set(
+            random.sample(list(cl.inputs() - target_inputs), width - len(target_inputs))
+        )
+    target_inputs = list(target_inputs)
+
+    # create key
+    key = {f&#34;key_{i}&#34;: choice([True, False]) for i in range(width * n)}
+
+    # connect comparators
+    cl.add(&#34;flip_out&#34;, &#34;or&#34;)
+    cl.add(&#34;restore_out&#34;, &#34;or&#34;)
+
+    for j in range(n):
+        cl.add(f&#34;flip_and_{j}&#34;, &#34;and&#34;, fanout=&#34;flip_out&#34;)
+        cl.add(f&#34;restore_and_{j}&#34;, &#34;and&#34;, fanout=&#34;restore_out&#34;)
+
+    for i, inp in enumerate(random.sample(target_inputs, width)):
+        for j in range(n):
+            cl.add(f&#34;key_{i+j*width}&#34;, &#34;input&#34;)
+            cl.add(f&#34;hardcoded_key_{i}_{j}&#34;, &#34;1&#34; if key[f&#34;key_{i+j*width}&#34;] else &#34;0&#34;)
+            cl.add(
+                f&#34;restore_xor_{i}_{j}&#34;,
+                &#34;xor&#34;,
+                fanin=[f&#34;key_{i+j*width}&#34;, inp],
+                fanout=f&#34;restore_and_{j}&#34;,
+            )
+            cl.add(
+                f&#34;flip_xor_{i}_{j}&#34;,
+                &#34;xor&#34;,
+                fanin=[f&#34;hardcoded_key_{i}_{j}&#34;, inp],
+                fanout=f&#34;flip_and_{j}&#34;,
+            )
+
+    # flip output
+    old_out = cl.uid(f&#34;{target_output}_pre_lock&#34;)
+    cl = cg.tx.relabel(cl, {target_output: old_out})
+    cl.set_output(old_out, False)
+    cl.add(
+        target_output, &#34;xor&#34;, fanin=[old_out, &#34;restore_out&#34;, &#34;flip_out&#34;], output=True
+    )
+
+    cg.lint(cl)
+    return cl, key
+
+
+def _connect_banyan(cl, swb_ins, swb_outs, bw):
+    I = int(2 * cg.utils.clog2(bw) - 2)
+    J = int(bw / 2)
+    for i in range(cg.utils.clog2(J)):
+        r = J / (2 ** i)
+        for j in range(J):
+            t = (j % r) &gt;= (r / 2)
+            # straight
+            out_i = int((i * bw) + (2 * j) + t)
+            in_i = int((i * bw + bw) + (2 * j) + t)
+            cl.connect(swb_outs[out_i], swb_ins[in_i])
+
+            # cross
+            out_i = int((i * bw) + (2 * j) + (1 - t) + ((r - 1) * ((1 - t) * 2 - 1)))
+            in_i = int((i * bw + bw) + (2 * j) + (1 - t))
+            cl.connect(swb_outs[out_i], swb_ins[in_i])
+
+            if r &gt; 2:
+                # straight
+                out_i = int(((I * J * 2) - ((2 + i) * bw)) + (2 * j) + t)
+                in_i = int(((I * J * 2) - ((1 + i) * bw)) + (2 * j) + t)
+                cl.connect(swb_outs[out_i], swb_ins[in_i])
+
+                # cross
+                out_i = int(
+                    ((I * J * 2) - ((2 + i) * bw))
+                    + (2 * j)
+                    + (1 - t)
+                    + ((r - 1) * ((1 - t) * 2 - 1))
+                )
+                in_i = int(((I * J * 2) - ((1 + i) * bw)) + (2 * j) + (1 - t))
+                cl.connect(swb_outs[out_i], swb_ins[in_i])
+
+
+def _connect_banyan_bb(cl, swb_ins, swb_outs, bw):
+    I = int(2 * cg.utils.clog2(bw) - 2)
+    J = int(bw / 2)
+    for i in range(cg.utils.clog2(J)):
+        r = J / (2 ** i)
+        for j in range(J):
+            t = (j % r) &gt;= (r / 2)
+            # straight
+            out_i = int((i * bw) + (2 * j) + t)
+            in_i = int((i * bw + bw) + (2 * j) + t)
+            cl.add(
+                f&#34;swb_{i}_{j}_straight&#34;,
+                &#34;buf&#34;,
+                fanin=swb_outs[out_i],
+                fanout=swb_ins[in_i],
+            )
+
+            # cross
+            out_i = int((i * bw) + (2 * j) + (1 - t) + ((r - 1) * ((1 - t) * 2 - 1)))
+            in_i = int((i * bw + bw) + (2 * j) + (1 - t))
+            cl.add(
+                f&#34;swb_{i}_{j}_cross&#34;, &#34;buf&#34;, fanin=swb_outs[out_i], fanout=swb_ins[in_i]
+            )
+
+            if r &gt; 2:
+                # straight
+                out_i = int(((I * J * 2) - ((2 + i) * bw)) + (2 * j) + t)
+                in_i = int(((I * J * 2) - ((1 + i) * bw)) + (2 * j) + t)
+                cl.add(
+                    f&#34;swb_{i}_{j}_r_straight&#34;,
+                    &#34;buf&#34;,
+                    fanin=swb_outs[out_i],
+                    fanout=swb_ins[in_i],
+                )
+
+                # cross
+                out_i = int(
+                    ((I * J * 2) - ((2 + i) * bw))
+                    + (2 * j)
+                    + (1 - t)
+                    + ((r - 1) * ((1 - t) * 2 - 1))
+                )
+                in_i = int(((I * J * 2) - ((1 + i) * bw)) + (2 * j) + (1 - t))
+                cl.add(
+                    f&#34;swb_{i}_{j}_r_cross&#34;,
+                    &#34;buf&#34;,
+                    fanin=swb_outs[out_i],
+                    fanout=swb_ins[in_i],
+                )
+
+
+def full_lock(c, bw, lw, avoid_loops=False):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with Full-Lock.
+
+    Hadi Mardani Kamali, Kimia Zamiri Azar, Houman Homayoun,
+    and Avesta Sasan. 2019. Full-Lock: Hard Distributions of SAT instances
+    for Obfuscating Circuits using Fully Configurable Logic and Routing
+    Blocks. In Proceedings of the 56th Annual Design Automation Conference
+    2019. Association for Computing Machinery, New York, NY, USA.
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    banyan_width: int
+            Width of Banyan network to use, must follow bw = 2**n, n&gt;1.
+    lut_width: int
+            Width to use for inserted LUTs, must evenly divide bw.
+    avoid_loops: bool
+            If True, gates fed by the Banyan network will be selected
+            such that they do not cause combinational loops.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # lock with luts
+    if avoid_loops:
+        gates = []
+        potential_gates = {g for g in c.nodes() - c.io() if len(c.fanin(g)) &lt;= lw}
+        for _ in range(int(bw / lw)):
+            gates.append(random.choice(list(potential_gates)))
+            potential_gates -= c.transitive_fanin(gates[-1])
+            potential_gates -= c.transitive_fanout(gates[-1])
+            if not potential_gates:
+                raise ValueError(&#34;Could not find enough gates to make &#34; &#34;acyclic lock&#34;)
+        cl, key = random_lut_lock(c, int(bw / lw), lw, gates=gates)
+    else:
+        cl, key = random_lut_lock(c, int(bw / lw), lw)
+
+    # generate switch
+    m = cg.tx.strip_io(cg.logic.mux(2))
+    s = cg.Circuit(name=&#34;switch&#34;)
+    s.add_subcircuit(m, &#34;m0&#34;)
+    s.add_subcircuit(m, &#34;m1&#34;)
+    s.add(&#34;in_0&#34;, &#34;buf&#34;, fanout=[&#34;m0_in_0&#34;, &#34;m1_in_1&#34;])
+    s.add(&#34;in_1&#34;, &#34;buf&#34;, fanout=[&#34;m0_in_1&#34;, &#34;m1_in_0&#34;])
+    s.add(&#34;out_0&#34;, &#34;xor&#34;, fanin=&#34;m0_out&#34;)
+    s.add(&#34;out_1&#34;, &#34;xor&#34;, fanin=&#34;m1_out&#34;)
+    s.add(&#34;key_0&#34;, &#34;input&#34;, fanout=[&#34;m0_sel_0&#34;, &#34;m1_sel_0&#34;])
+    s.add(&#34;key_1&#34;, &#34;input&#34;, fanout=&#34;out_0&#34;)
+    s.add(&#34;key_2&#34;, &#34;input&#34;, fanout=&#34;out_1&#34;)
+
+    # generate banyan
+    I = int(2 * cg.utils.clog2(bw) - 2)
+    J = int(bw / 2)
+
+    # add switches
+    for i in range(I * J):
+        cl.add_subcircuit(s, f&#34;swb_{i}&#34;)
+
+    # make connections
+    swb_ins = [f&#34;swb_{i//2}_in_{i%2}&#34; for i in range(I * J * 2)]
+    swb_outs = [f&#34;swb_{i//2}_out_{i%2}&#34; for i in range(I * J * 2)]
+    _connect_banyan(cl, swb_ins, swb_outs, bw)
+
+    # get banyan io
+    net_ins = swb_ins[:bw]
+    net_outs = swb_outs[-bw:]
+
+    # generate key
+    for i in range(I * J):
+        for j in range(3):
+            key[f&#34;swb_{i}_key_{j}&#34;] = choice([True, False])
+
+    # get banyan mapping
+    mapping = {}
+    polarity = {}
+    orig_result = cg.sat.solve(cl, {**{n: False for n in net_ins}, **key})
+    for net_in in net_ins:
+        result = cg.sat.solve(cl, {**{n: n == net_in for n in net_ins}, **key})
+        for net_out in net_outs:
+            if result[net_out] != orig_result[net_out]:
+                mapping[net_in] = net_out
+                polarity[net_in] = result[net_out]
+                break
+
+    # connect banyan io to luts
+    for i in range(int(bw / lw)):
+        for j in range(lw):
+            driver = cl.fanin(f&#34;lut_{i}_sel_{j}&#34;).pop()
+            cl.disconnect(driver, f&#34;lut_{i}_sel_{j}&#34;)
+            net_in = net_ins[i * lw + j]
+            cl.connect(mapping[net_in], f&#34;lut_{i}_sel_{j}&#34;)
+            if not polarity[net_in]:
+                driver = cl.add(f&#34;not_{net_in}&#34;, &#34;not&#34;, fanin=driver)
+            cl.connect(driver, net_in)
+
+    for k in key:
+        cl.set_type(k, &#34;input&#34;)
+
+    cg.lint(cl)
+    if avoid_loops and cl.is_cyclic():
+        raise ValueError(&#34;Locked circuit is cyclic&#34;)
+    return cl, key
+
+
+def full_lock_mux(c, bw, lw):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with a muxed-based model of Full-Lock.
+
+    Uses muxes instead of the Banyan network, a relaxation that breaks symmetry
+    and simplifies the model substantially.
+
+    Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi
+    Modeling Techniques for Logic Locking. In Proceedings
+    of the International Conference on Computer Aided Design 2020 (ICCAD-39).
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    banyan_width: int
+            Width of Banyan network to use, must follow bw = 2**n, n&gt;1.
+    lut_width: int
+            Width to use for inserted LUTs, must evenly divide bw.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # first generate banyan, to get a valid mapping for the key
+    b = cg.Circuit()
+
+    # generate switch
+    m = cg.tx.strip_io(cg.logic.mux(2))
+    s = cg.Circuit(name=&#34;switch&#34;)
+    s.add_subcircuit(m, &#34;m0&#34;)
+    s.add_subcircuit(m, &#34;m1&#34;)
+    s.add(&#34;in_0&#34;, &#34;buf&#34;, fanout=[&#34;m0_in_0&#34;, &#34;m1_in_1&#34;])
+    s.add(&#34;in_1&#34;, &#34;buf&#34;, fanout=[&#34;m0_in_1&#34;, &#34;m1_in_0&#34;])
+    s.add(&#34;out_0&#34;, &#34;xor&#34;, fanin=&#34;m0_out&#34;)
+    s.add(&#34;out_1&#34;, &#34;xor&#34;, fanin=&#34;m1_out&#34;)
+    s.add(&#34;key_0&#34;, &#34;input&#34;, fanout=[&#34;m0_sel_0&#34;, &#34;m1_sel_0&#34;])
+    s.add(&#34;key_1&#34;, &#34;input&#34;, fanout=&#34;out_0&#34;)
+    s.add(&#34;key_2&#34;, &#34;input&#34;, fanout=&#34;out_1&#34;)
+
+    # generate banyan
+    I = int(2 * cg.utils.clog2(bw) - 2)
+    J = int(bw / 2)
+
+    # add switches
+    for i in range(I * J):
+        b.add_subcircuit(s, f&#34;swb_{i}&#34;)
+
+    # make connections
+    swb_ins = [f&#34;swb_{i//2}_in_{i%2}&#34; for i in range(I * J * 2)]
+    swb_outs = [f&#34;swb_{i//2}_out_{i%2}&#34; for i in range(I * J * 2)]
+    _connect_banyan(b, swb_ins, swb_outs, bw)
+
+    # get banyan io
+    net_ins = swb_ins[:bw]
+    net_outs = swb_outs[-bw:]
+
+    # generate key
+    key = {}
+    for i in range(I * J):
+        for j in range(3):
+            key[f&#34;swb_{i}_key_{j}&#34;] = choice([True, False])
+
+    # get banyan mapping
+    mapping = {}
+    polarity = {}
+    orig_result = cg.sat.solve(b, {**{n: False for n in net_ins}, **key})
+    for net_in in net_ins:
+        result = cg.sat.solve(
+            b, {**{n: False if n != net_in else True for n in net_ins}, **key}
+        )
+        for net_out in net_outs:
+            if result[net_out] != orig_result[net_out]:
+                mapping[net_in] = net_out
+                polarity[net_in] = result[net_out]
+                break
+
+    # lock with luts
+    cl, key = random_lut_lock(c, int(bw / lw), lw)
+
+    # generate mux
+    m = cg.tx.strip_io(cg.logic.mux(bw))
+
+    # add muxes and xors
+    banyan_to_mux = {}
+    for i in range(bw):
+        cl.add_subcircuit(m, f&#34;mux_{i}&#34;)
+        for b in range(cg.utils.clog2(bw)):
+            cl.add(f&#34;key_{i}_{b}&#34;, &#34;input&#34;, fanout=f&#34;mux_{i}_sel_{b}&#34;)
+        cl.add(f&#34;mux_{i}_xor&#34;, &#34;xor&#34;, fanin=f&#34;mux_{i}_out&#34;)
+        cl.add(f&#34;key_{i}_{cg.utils.clog2(bw)}&#34;, &#34;input&#34;, fanout=f&#34;mux_{i}_xor&#34;)
+        banyan_to_mux[net_outs[i]] = f&#34;mux_{i}_xor&#34;
+
+    # connect muxes to luts
+    for i in range(bw):
+        net_in = net_ins[i]
+        xor = banyan_to_mux[mapping[net_in]]
+        o = int(xor.split(&#34;_&#34;)[1])
+
+        driver = cl.fanin(f&#34;lut_{i//lw}_sel_{i%lw}&#34;).pop()
+        cl.disconnect(driver, f&#34;lut_{i//lw}_sel_{i%lw}&#34;)
+
+        if not polarity[net_in]:
+            driver = cl.add(f&#34;not_{net_in}&#34;, &#34;not&#34;, fanin=driver)
+            key[f&#34;key_{o}_{cg.utils.clog2(bw)}&#34;] = True
+        else:
+            key[f&#34;key_{o}_{cg.utils.clog2(bw)}&#34;] = False
+
+        for b in range(bw):
+            cl.connect(driver, f&#34;mux_{b}_in_{i}&#34;)
+
+        cl.connect(xor, f&#34;lut_{i//lw}_sel_{i%lw}&#34;)
+        for b, v in enumerate(cg.utils.int_to_bin(i, cg.utils.clog2(bw), True)):
+            key[f&#34;key_{o}_{b}&#34;] = v
+
+    cg.lint(cl)
+    return cl, key
+
+
+def inter_lock(c, bw, reduced_swb=False):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with InterLock.
+
+    Kamali, Hadi Mardani, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
+    &#34;Interlock: An intercorrelated logic and routing locking.&#34;
+    In 2020 IEEE/ACM International Conference On Computer Aided Design (ICCAD),
+    pp. 1-9. IEEE, 2020.
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    bw: int
+            The size of the keyed rounting block. A bw of m results
+            in an m x m sized KeyRB.
+    reduced_swb: bool
+            If True, each switchbox is reduced from 3 keys to 1 key due to the fact
+            that for 100% utilization, the other 2 keys will never be used. Essentially,
+            the muxes at the output of the switchbox are removed.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    cl = c.copy()
+    cg.lint(cl)
+
+    # generate switch
+    m = cg.tx.strip_io(cg.logic.mux(2))
+    s = cg.Circuit(name=&#34;switch&#34;)
+    s.add_subcircuit(m, &#34;m0&#34;)
+    s.add_subcircuit(m, &#34;m1&#34;)
+    s.add(&#34;in_0&#34;, &#34;input&#34;, fanout=[&#34;m0_in_0&#34;, &#34;m1_in_1&#34;])
+    s.add(&#34;in_1&#34;, &#34;input&#34;, fanout=[&#34;m0_in_1&#34;, &#34;m1_in_0&#34;])
+    s.add(&#34;ex_in_0&#34;, &#34;input&#34;)
+    s.add(&#34;ex_in_1&#34;, &#34;input&#34;)
+    # f1 and f2 starts as &#39;and&#39; gates, must be updated later
+    s.add(&#34;f1_out&#34;, &#34;and&#34;, fanin=[&#34;m0_out&#34;, &#34;ex_in_0&#34;])
+    s.add(&#34;f2_out&#34;, &#34;and&#34;, fanin=[&#34;m1_out&#34;, &#34;ex_in_1&#34;])
+    s.add(&#34;key_0&#34;, &#34;input&#34;, fanout=[&#34;m0_sel_0&#34;, &#34;m1_sel_0&#34;])
+    s.add(&#34;out_0&#34;, &#34;buf&#34;, output=True)
+    s.add(&#34;out_1&#34;, &#34;buf&#34;, output=True)
+    if not reduced_swb:
+        s.add_subcircuit(m, &#34;m2&#34;)
+        s.add_subcircuit(m, &#34;m3&#34;)
+        s.add(&#34;key_1&#34;, &#34;input&#34;, fanout=&#34;m2_sel_0&#34;)
+        s.add(&#34;key_2&#34;, &#34;input&#34;, fanout=&#34;m3_sel_0&#34;)
+        s.connect(&#34;f1_out&#34;, &#34;m2_in_0&#34;)
+        s.connect(&#34;f2_out&#34;, &#34;m3_in_1&#34;)
+        s.connect(&#34;m0_out&#34;, &#34;m3_in_0&#34;)
+        s.connect(&#34;m1_out&#34;, &#34;m2_in_1&#34;)
+        s.connect(&#34;m2_out&#34;, &#34;out_0&#34;)
+        s.connect(&#34;m3_out&#34;, &#34;out_1&#34;)
+    else:
+        s.connect(&#34;f1_out&#34;, &#34;out_0&#34;)
+        s.connect(&#34;f2_out&#34;, &#34;out_1&#34;)
+
+    sbb_inputs = [&#34;in_0&#34;, &#34;in_1&#34;, &#34;ex_in_0&#34;, &#34;ex_in_1&#34;, &#34;key_0&#34;]
+    if not reduced_swb:
+        sbb_inputs += [&#34;key_1&#34;, &#34;key_2&#34;]
+    sbb = cg.BlackBox(&#34;switch&#34;, sbb_inputs, [&#34;out_0&#34;, &#34;out_1&#34;],)
+
+    # Select paths to embed in the routing network
+    path_length = 2 * cg.utils.clog2(bw) - 2
+    paths = []
+
+    filtered_gates = set()
+
+    def filter_gate(n):
+        gate = n
+        gates = [n]
+        for _ in range(path_length):
+            if (
+                len(cl.fanin(gate)) != 2
+                or len(cl.fanout(gate)) != 1
+                or cl.is_output(gate)
+                or gate in filtered_gates
+                or len(cl.fanin(gate) &amp; filtered_gates) &gt; 0
+                or len(cl.fanout(gate) &amp; filtered_gates) &gt; 0
+            ):
+                return False
+            gate = cl.fanout(gate).pop()
+            gates.append(gate)
+        filtered_gates.update(gates)
+        for gate in gates:
+            filtered_gates.update(cl.fanin(gate))
+        return True
+
+    candidate_gates = filter(filter_gate, cl.nodes())
+    for _ in range(bw):
+        try:
+            gate = next(candidate_gates)
+        except StopIteration as e:
+            raise ValueError(&#34;Not enough candidate gates found for locking&#34;) from e
+        path = [gate]
+        for _ in range(path_length - 1):
+            gate = cl.fanout(gate).pop()
+            path.append(gate)
+        paths.append(path)
+
+    # generate banyan with J rows and I columns of SwBs
+    I = path_length
+    J = int(bw / 2)
+
+    for i in range(I * J):
+        cl.add_blackbox(sbb, f&#34;swb_{i}&#34;)
+
+    # make connections
+    swb_ins = [f&#34;swb_{i//2}.in_{i%2}&#34; for i in range(I * J * 2)]
+    swb_outs = [f&#34;swb_{i//2}.out_{i%2}&#34; for i in range(I * J * 2)]
+    _connect_banyan_bb(cl, swb_ins, swb_outs, bw)
+
+    # generate key
+    # In the example from the paper, the paths in a SWB directly from an
+    # input to an output are never used. Starting with that implemetation.
+    # Could sometimes choose paths less than `path_length` and use these
+    # connections with a decoy external input, but such a strategy is not
+    # discussed in the paper.
+    swaps = []
+    key = {}
+    for i in range(I * J):
+        swaps.append(choice([True, False]))
+        if swaps[-1]:
+            key[f&#34;swb_{i}_key_0&#34;] = True
+        else:
+            key[f&#34;swb_{i}_key_0&#34;] = False
+        if not reduced_swb:
+            key[f&#34;swb_{i}_key_1&#34;] = False
+            key[f&#34;swb_{i}_key_2&#34;] = True
+
+    f_gates = {}
+
+    # Add paths to banyan
+    # Get a random intial ordering of paths
+    input_order = list(range(bw))
+    shuffle(input_order)
+    for i, p_idx in enumerate(input_order):
+        path = paths[p_idx]
+        swb_idx = i // 2
+        i_idx = i % 2
+        prev_node = cl.fanin(path[0]).pop()
+        cl.connect(prev_node, f&#34;swb_{swb_idx}.in_{i_idx}&#34;)
+        for j, n in enumerate(path):
+            o_idx = i_idx ^ int(swaps[swb_idx])
+            ex_i = (cl.fanin(n) - {prev_node}).pop()
+            cl.connect(ex_i, f&#34;swb_{swb_idx}.ex_in_{o_idx}&#34;)
+            f_gates[f&#34;swb_{swb_idx}_f{o_idx+1}_out&#34;] = cl.type(n)
+            if j != len(path) - 1:
+                next_n = cl.fanout(f&#34;swb_{swb_idx}.out_{o_idx}&#34;).pop()
+                next_n = cl.fanout(next_n).pop()
+                swb_idx = int(next_n.split(&#34;.&#34;)[0].split(&#34;_&#34;)[-1])
+                i_idx = int(next_n.split(&#34;.&#34;)[-1].split(&#34;_&#34;)[-1])
+                prev_node = n
+            else:
+                for fo in cl.fanout(n):
+                    cl.disconnect(n, fo)
+                    try:
+                        conn = cl.fanout(f&#34;swb_{swb_idx}.out_{o_idx}&#34;).pop()
+                    except KeyError:
+                        conn = cl.add(
+                            f&#34;swb_{swb_idx}_out_{o_idx}_load&#34;,
+                            &#34;buf&#34;,
+                            fanin=f&#34;swb_{swb_idx}.out_{o_idx}&#34;,
+                        )
+                    cl.connect(conn, fo)
+
+    for path in paths:
+        for node in path:
+            cl.remove(node)
+
+    for i in range(I * J):
+        cl.fill_blackbox(f&#34;swb_{i}&#34;, s)
+
+    for k, v in f_gates.items():
+        cl.set_type(k, v)
+
+    for k in key:
+        cl.set_type(k, &#34;input&#34;)
+
+    cg.lint(cl)
+    return cl, key
+
+
+def lebl(c, bw, ng):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with Logic-Enhanced Banyan Locking.
+
+    Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi Modeling Techniques
+    for Logic Locking. In Proceedings of the International Conference on
+    Computer Aided Design 2020 (ICCAD-39).
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    bw: int
+            Width of Banyan network.
+    lw: int
+            Minimum number of gates mapped to network.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # generate switch and mux
+    s = cg.Circuit(name=&#34;switch&#34;)
+    m2 = cg.tx.strip_io(cg.logic.mux(2))
+    s.add_subcircuit(m2, &#34;m2_0&#34;)
+    s.add_subcircuit(m2, &#34;m2_1&#34;)
+    m4 = cg.tx.strip_io(cg.logic.mux(4))
+    s.add_subcircuit(m4, &#34;m4_0&#34;)
+    s.add_subcircuit(m4, &#34;m4_1&#34;)
+    s.add(&#34;in_0&#34;, &#34;buf&#34;, fanout=[&#34;m2_0_in_0&#34;, &#34;m2_1_in_1&#34;])
+    s.add(&#34;in_1&#34;, &#34;buf&#34;, fanout=[&#34;m2_0_in_1&#34;, &#34;m2_1_in_0&#34;])
+    s.add(&#34;out_0&#34;, &#34;buf&#34;, fanin=&#34;m4_0_out&#34;)
+    s.add(&#34;out_1&#34;, &#34;buf&#34;, fanin=&#34;m4_1_out&#34;)
+    s.add(&#34;key_0&#34;, &#34;input&#34;, fanout=[&#34;m2_0_sel_0&#34;, &#34;m2_1_sel_0&#34;])
+    s.add(&#34;key_1&#34;, &#34;input&#34;, fanout=[&#34;m4_0_sel_0&#34;, &#34;m4_1_sel_0&#34;])
+    s.add(&#34;key_2&#34;, &#34;input&#34;, fanout=[&#34;m4_0_sel_1&#34;, &#34;m4_1_sel_1&#34;])
+
+    # generate banyan
+    I = int(2 * cg.utils.clog2(bw) - 2)
+    J = int(bw / 2)
+
+    # add switches and muxes
+    for i in range(I * J):
+        cl.add_subcircuit(s, f&#34;swb_{i}&#34;)
+
+    # make connections
+    swb_ins = [f&#34;swb_{i//2}_in_{i%2}&#34; for i in range(I * J * 2)]
+    swb_outs = [f&#34;swb_{i//2}_out_{i%2}&#34; for i in range(I * J * 2)]
+    _connect_banyan(cl, swb_ins, swb_outs, bw)
+
+    # get banyan io
+    net_ins = swb_ins[:bw]
+    net_outs = swb_outs[-bw:]
+
+    # generate key
+    key = {f&#34;swb_{i//3}_key_{i%3}&#34;: choice([True, False]) for i in range(3 * I * J)}
+
+    # generate connections between banyan nodes
+    bfi = {n: set() for n in swb_outs + net_ins}
+    bfo = {n: set() for n in swb_outs + net_ins}
+    for n in swb_outs + net_ins:
+        if cl.fanout(n):
+            fo_node = cl.fanout(n).pop()
+            swb_i = fo_node.split(&#34;_&#34;)[1]
+            bfi[f&#34;swb_{swb_i}_out_0&#34;].add(n)
+            bfi[f&#34;swb_{swb_i}_out_1&#34;].add(n)
+            bfo[n].add(f&#34;swb_{swb_i}_out_0&#34;)
+            bfo[n].add(f&#34;swb_{swb_i}_out_1&#34;)
+
+    # find a mapping of circuit onto banyan
+    net_map = IDPool()
+    for bn in swb_outs + net_ins:
+        for cn in c:
+            net_map.id(f&#34;m_{bn}_{cn}&#34;)
+
+    # mapping implications
+    clauses = []
+    for bn in swb_outs + net_ins:
+        # fanin
+        if bfi[bn]:
+            for cn in c:
+                if c.fanin(cn):
+                    for fcn in c.fanin(cn):
+                        clause = [-net_map.id(f&#34;m_{bn}_{cn}&#34;)]
+                        clause += [net_map.id(f&#34;m_{fbn}_{fcn}&#34;) for fbn in bfi[bn]]
+                        clause += [net_map.id(f&#34;m_{fbn}_{cn}&#34;) for fbn in bfi[bn]]
+                        clauses.append(clause)
+                else:
+                    clause = [-net_map.id(f&#34;m_{bn}_{cn}&#34;)]
+                    clause += [net_map.id(f&#34;m_{fbn}_{cn}&#34;) for fbn in bfi[bn]]
+                    clauses.append(clause)
+
+        # fanout
+        if bfo[bn]:
+            for cn in c:
+                clause = [-net_map.id(f&#34;m_{bn}_{cn}&#34;)]
+                clause += [net_map.id(f&#34;m_{fbn}_{cn}&#34;) for fbn in bfo[bn]]
+                for fcn in c.fanout(cn):
+                    clause += [net_map.id(f&#34;m_{fbn}_{fcn}&#34;) for fbn in bfo[bn]]
+                clauses.append(clause)
+
+    # no feed through
+    for cn in c:
+        net_map.id(f&#34;INPUT_OR_{cn}&#34;)
+        net_map.id(f&#34;OUTPUT_OR_{cn}&#34;)
+        clauses.append(
+            [-net_map.id(f&#34;INPUT_OR_{cn}&#34;)]
+            + [net_map.id(f&#34;m_{bn}_{cn}&#34;) for bn in net_ins]
+        )
+        clauses.append(
+            [-net_map.id(f&#34;OUTPUT_OR_{cn}&#34;)]
+            + [net_map.id(f&#34;m_{bn}_{cn}&#34;) for bn in net_outs]
+        )
+        for bn in net_ins:
+            clauses.append([net_map.id(f&#34;INPUT_OR_{cn}&#34;), -net_map.id(f&#34;m_{bn}_{cn}&#34;)])
+        for bn in net_outs:
+            clauses.append([net_map.id(f&#34;OUTPUT_OR_{cn}&#34;), -net_map.id(f&#34;m_{bn}_{cn}&#34;)])
+        clauses.append([-net_map.id(f&#34;OUTPUT_OR_{cn}&#34;), -net_map.id(f&#34;INPUT_OR_{cn}&#34;)])
+
+    # at least ngates
+    for bn in swb_outs + net_ins:
+        net_map.id(f&#34;NGATES_OR_{bn}&#34;)
+        clauses.append(
+            [-net_map.id(f&#34;NGATES_OR_{bn}&#34;)] + [net_map.id(f&#34;m_{bn}_{cn}&#34;) for cn in c]
+        )
+        for cn in c:
+            clauses.append([net_map.id(f&#34;NGATES_OR_{bn}&#34;), -net_map.id(f&#34;m_{bn}_{cn}&#34;)])
+    clauses += CardEnc.atleast(
+        bound=ng,
+        lits=[net_map.id(f&#34;NGATES_OR_{bn}&#34;) for bn in swb_outs + net_ins],
+        vpool=net_map,
+    ).clauses
+
+    # at most one mapping per out
+    for bn in swb_outs + net_ins:
+        clauses += CardEnc.atmost(
+            lits=[net_map.id(f&#34;m_{bn}_{cn}&#34;) for cn in c], vpool=net_map
+        ).clauses
+
+    # limit number of times a gate is mapped to net outputs to fanout of gate
+    for cn in c:
+        lits = [net_map.id(f&#34;m_{bn}_{cn}&#34;) for bn in net_outs]
+        bound = len(c.fanout(cn))
+        if len(lits) &lt; bound:
+            continue
+        clauses += CardEnc.atmost(bound=bound, lits=lits, vpool=net_map).clauses
+
+    # prohibit outputs from net
+    for bn in swb_outs + net_ins:
+        for cn in c.outputs():
+            clauses += [[-net_map.id(f&#34;m_{bn}_{cn}&#34;)]]
+
+    # solve
+    solver = Cadical(bootstrap_with=clauses)
+    if not solver.solve():
+        raise ValueError(f&#34;No config for width &#39;{bw}&#39;&#34;)
+    model = solver.get_model()
+
+    # get mapping
+    mapping = {}
+    for bn in swb_outs + net_ins:
+        selected_gates = [cn for cn in c if model[net_map.id(f&#34;m_{bn}_{cn}&#34;) - 1] &gt; 0]
+        if len(selected_gates) &gt; 1:
+            raise ValueError(f&#34;Multiple gates mapped to &#39;{bn}&#39;&#34;)
+        mapping[bn] = selected_gates[0] if selected_gates else None
+
+    potential_net_fanins = list(
+        c.nodes()
+        - (c.endpoints() | set(mapping.values()) | mapping.keys() | c.startpoints())
+    )
+
+    # connect net inputs
+    for bn in net_ins:
+        if mapping[bn]:
+            cl.connect(mapping[bn], bn)
+        else:
+            cl.connect(choice(potential_net_fanins), bn)
+    mapping.update({cl.fanin(bn).pop(): cl.fanin(bn).pop() for bn in net_ins})
+    potential_net_fanouts = list(
+        c.nodes()
+        - (c.startpoints() | set(mapping.values()) | mapping.keys() | c.endpoints())
+    )
+
+    # selected_fo = {}
+
+    # connect switch boxes
+    for i, bn in enumerate(swb_outs):
+        # get keys
+        if key[f&#34;swb_{i//2}_key_1&#34;] and key[f&#34;swb_{i//2}_key_2&#34;]:
+            k = 3
+        elif not key[f&#34;swb_{i//2}_key_1&#34;] and key[f&#34;swb_{i//2}_key_2&#34;]:
+            k = 2
+        elif key[f&#34;swb_{i//2}_key_1&#34;] and not key[f&#34;swb_{i//2}_key_2&#34;]:
+            k = 1
+        elif not key[f&#34;swb_{i//2}_key_1&#34;] and not key[f&#34;swb_{i//2}_key_2&#34;]:
+            k = 0
+        switch_key = 1 if key[f&#34;swb_{i//2}_key_0&#34;] == 1 else 0
+
+        mux_input = f&#34;swb_{i//2}_m4_{i%2}_in_{k}&#34;
+
+        # connect inner nodes
+        mux_gate_types = set()
+
+        # constant output, hookup to a node that is already in the affected outputs
+        # fanin, not in others
+        if not mapping[bn] and bn in net_outs:
+            decoy_fanout_gate = choice(potential_net_fanouts)
+            # selected_fo[bn] = decoy_fanout_gate
+            if cl.type(decoy_fanout_gate) in [&#34;and&#34;, &#34;nand&#34;]:
+                cl.set_type(mux_input, &#34;1&#34;)
+            elif cl.type(decoy_fanout_gate) in [&#34;or&#34;, &#34;nor&#34;, &#34;xor&#34;, &#34;xnor&#34;]:
+                cl.set_type(mux_input, &#34;0&#34;)
+            elif cl.type(decoy_fanout_gate) in [&#34;buf&#34;]:
+                if randint(0, 1):
+                    cl.set_type(mux_input, &#34;1&#34;)
+                    cl.set_type(decoy_fanout_gate, choice([&#34;and&#34;, &#34;xnor&#34;]))
+                else:
+                    cl.set_type(mux_input, &#34;0&#34;)
+                    cl.set_type(decoy_fanout_gate, choice([&#34;or&#34;, &#34;xor&#34;]))
+            elif cl.type(decoy_fanout_gate) in [&#34;not&#34;]:
+                if randint(0, 1):
+                    cl.set_type(mux_input, &#34;1&#34;)
+                    cl.set_type(decoy_fanout_gate, choice([&#34;nand&#34;, &#34;xor&#34;]))
+                else:
+                    cl.set_type(mux_input, &#34;0&#34;)
+                    cl.set_type(decoy_fanout_gate, choice([&#34;nor&#34;, &#34;xnor&#34;]))
+            elif cl.type(decoy_fanout_gate) in [&#34;0&#34;, &#34;1&#34;]:
+                cl.set_type(mux_input, cl.type(decoy_fanout_gate))
+                cl.set_type(decoy_fanout_gate, &#34;buf&#34;)
+            else:
+                raise ValueError(f&#34;Invalid gate type &#39;{cl.type(decoy_fanout_gate)}&#39;&#34;)
+            cl.connect(bn, decoy_fanout_gate)
+            mux_gate_types.add(cl.type(mux_input))
+
+        # feedthrough
+        elif mapping[bn] in [mapping[fbn] for fbn in bfi[bn]]:
+            cl.set_type(mux_input, &#34;buf&#34;)
+            mux_gate_types.add(&#34;buf&#34;)
+            if mapping[cl.fanin(f&#34;swb_{i//2}_in_0&#34;).pop()] == mapping[bn]:
+                cl.connect(f&#34;swb_{i//2}_m2_{switch_key}_out&#34;, mux_input)
+            else:
+                cl.connect(f&#34;swb_{i//2}_m2_{1-switch_key}_out&#34;, mux_input)
+
+        # gate
+        elif mapping[bn]:
+            cl.set_type(mux_input, cl.type(mapping[bn]))
+            mux_gate_types.add(cl.type(mapping[bn]))
+            gfi = cl.fanin(mapping[bn])
+            if mapping[cl.fanin(f&#34;swb_{i//2}_in_0&#34;).pop()] in gfi:
+                cl.connect(f&#34;swb_{i//2}_m2_{switch_key}_out&#34;, mux_input)
+                gfi.remove(mapping[cl.fanin(f&#34;swb_{i//2}_in_0&#34;).pop()])
+            if mapping[cl.fanin(f&#34;swb_{i//2}_in_1&#34;).pop()] in gfi:
+                cl.connect(f&#34;swb_{i//2}_m2_{1-switch_key}_out&#34;, mux_input)
+
+        # mapped to None, any key works
+        else:
+            k = None
+
+        # fill out random gates
+        for j in range(4):
+            if j != k:
+                t = choice(
+                    tuple(
+                        {
+                            &#34;buf&#34;,
+                            &#34;or&#34;,
+                            &#34;nor&#34;,
+                            &#34;and&#34;,
+                            &#34;nand&#34;,
+                            &#34;not&#34;,
+                            &#34;xor&#34;,
+                            &#34;xnor&#34;,
+                            &#34;0&#34;,
+                            &#34;1&#34;,
+                        }
+                        - mux_gate_types
+                    )
+                )
+                mux_gate_types.add(t)
+                mux_input = f&#34;swb_{i//2}_m4_{i%2}_in_{j}&#34;
+                cl.set_type(mux_input, t)
+                if t in (&#34;not&#34;, &#34;buf&#34;):
+                    # pick a random fanin
+                    cl.connect(f&#34;swb_{i//2}_m2_{randint(0,1)}_out&#34;, mux_input)
+                elif t in (&#34;0&#34;, &#34;1&#34;):
+                    pass
+                else:
+                    cl.connect(f&#34;swb_{i//2}_m2_0_out&#34;, mux_input)
+                    cl.connect(f&#34;swb_{i//2}_m2_1_out&#34;, mux_input)
+
+    # connect outputs non constant outs
+    rev_mapping = {}
+    for bn in net_outs:
+        if mapping[bn]:
+            if mapping[bn] not in rev_mapping:
+                rev_mapping[mapping[bn]] = set()
+            rev_mapping[mapping[bn]].add(bn)
+
+    for cn, val in rev_mapping.items():
+        for fcn, bn in zip_longest(cl.fanout(cn), val, fillvalue=list(val)[0]):
+            cl.connect(bn, fcn)
+
+    # delete mapped gates
+    deleted = True
+    while deleted:
+        deleted = False
+        for n in cl.nodes():
+            # node and all fanout are in the net
+            if n not in mapping and n in mapping.values():
+                if all(
+                    s not in mapping and s in mapping.values() for s in cl.fanout(n)
+                ):
+                    cl.remove(n)
+                    deleted = True
+            # node in net fanout
+            if n in [mapping[o] for o in net_outs] and n in cl:
+                cl.remove(n)
+                deleted = True
+
+    for k in key:
+        cl.set_type(k, &#34;input&#34;)
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="logiclocking.locks.full_lock"><code class="name flex">
+<span>def <span class="ident">full_lock</span></span>(<span>c, bw, lw, avoid_loops=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with Full-Lock.</p>
+<p>Hadi Mardani Kamali, Kimia Zamiri Azar, Houman Homayoun,
+and Avesta Sasan. 2019. Full-Lock: Hard Distributions of SAT instances
+for Obfuscating Circuits using Fully Configurable Logic and Routing
+Blocks. In Proceedings of the 56th Annual Design Automation Conference
+2019. Association for Computing Machinery, New York, NY, USA.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>circuit</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>banyan_width</code></strong> :&ensp;<code>int</code></dt>
+<dd>Width of Banyan network to use, must follow bw = 2**n, n&gt;1.</dd>
+<dt><strong><code>lut_width</code></strong> :&ensp;<code>int</code></dt>
+<dd>Width to use for inserted LUTs, must evenly divide bw.</dd>
+<dt><strong><code>avoid_loops</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, gates fed by the Banyan network will be selected
+such that they do not cause combinational loops.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def full_lock(c, bw, lw, avoid_loops=False):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with Full-Lock.
+
+    Hadi Mardani Kamali, Kimia Zamiri Azar, Houman Homayoun,
+    and Avesta Sasan. 2019. Full-Lock: Hard Distributions of SAT instances
+    for Obfuscating Circuits using Fully Configurable Logic and Routing
+    Blocks. In Proceedings of the 56th Annual Design Automation Conference
+    2019. Association for Computing Machinery, New York, NY, USA.
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    banyan_width: int
+            Width of Banyan network to use, must follow bw = 2**n, n&gt;1.
+    lut_width: int
+            Width to use for inserted LUTs, must evenly divide bw.
+    avoid_loops: bool
+            If True, gates fed by the Banyan network will be selected
+            such that they do not cause combinational loops.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # lock with luts
+    if avoid_loops:
+        gates = []
+        potential_gates = {g for g in c.nodes() - c.io() if len(c.fanin(g)) &lt;= lw}
+        for _ in range(int(bw / lw)):
+            gates.append(random.choice(list(potential_gates)))
+            potential_gates -= c.transitive_fanin(gates[-1])
+            potential_gates -= c.transitive_fanout(gates[-1])
+            if not potential_gates:
+                raise ValueError(&#34;Could not find enough gates to make &#34; &#34;acyclic lock&#34;)
+        cl, key = random_lut_lock(c, int(bw / lw), lw, gates=gates)
+    else:
+        cl, key = random_lut_lock(c, int(bw / lw), lw)
+
+    # generate switch
+    m = cg.tx.strip_io(cg.logic.mux(2))
+    s = cg.Circuit(name=&#34;switch&#34;)
+    s.add_subcircuit(m, &#34;m0&#34;)
+    s.add_subcircuit(m, &#34;m1&#34;)
+    s.add(&#34;in_0&#34;, &#34;buf&#34;, fanout=[&#34;m0_in_0&#34;, &#34;m1_in_1&#34;])
+    s.add(&#34;in_1&#34;, &#34;buf&#34;, fanout=[&#34;m0_in_1&#34;, &#34;m1_in_0&#34;])
+    s.add(&#34;out_0&#34;, &#34;xor&#34;, fanin=&#34;m0_out&#34;)
+    s.add(&#34;out_1&#34;, &#34;xor&#34;, fanin=&#34;m1_out&#34;)
+    s.add(&#34;key_0&#34;, &#34;input&#34;, fanout=[&#34;m0_sel_0&#34;, &#34;m1_sel_0&#34;])
+    s.add(&#34;key_1&#34;, &#34;input&#34;, fanout=&#34;out_0&#34;)
+    s.add(&#34;key_2&#34;, &#34;input&#34;, fanout=&#34;out_1&#34;)
+
+    # generate banyan
+    I = int(2 * cg.utils.clog2(bw) - 2)
+    J = int(bw / 2)
+
+    # add switches
+    for i in range(I * J):
+        cl.add_subcircuit(s, f&#34;swb_{i}&#34;)
+
+    # make connections
+    swb_ins = [f&#34;swb_{i//2}_in_{i%2}&#34; for i in range(I * J * 2)]
+    swb_outs = [f&#34;swb_{i//2}_out_{i%2}&#34; for i in range(I * J * 2)]
+    _connect_banyan(cl, swb_ins, swb_outs, bw)
+
+    # get banyan io
+    net_ins = swb_ins[:bw]
+    net_outs = swb_outs[-bw:]
+
+    # generate key
+    for i in range(I * J):
+        for j in range(3):
+            key[f&#34;swb_{i}_key_{j}&#34;] = choice([True, False])
+
+    # get banyan mapping
+    mapping = {}
+    polarity = {}
+    orig_result = cg.sat.solve(cl, {**{n: False for n in net_ins}, **key})
+    for net_in in net_ins:
+        result = cg.sat.solve(cl, {**{n: n == net_in for n in net_ins}, **key})
+        for net_out in net_outs:
+            if result[net_out] != orig_result[net_out]:
+                mapping[net_in] = net_out
+                polarity[net_in] = result[net_out]
+                break
+
+    # connect banyan io to luts
+    for i in range(int(bw / lw)):
+        for j in range(lw):
+            driver = cl.fanin(f&#34;lut_{i}_sel_{j}&#34;).pop()
+            cl.disconnect(driver, f&#34;lut_{i}_sel_{j}&#34;)
+            net_in = net_ins[i * lw + j]
+            cl.connect(mapping[net_in], f&#34;lut_{i}_sel_{j}&#34;)
+            if not polarity[net_in]:
+                driver = cl.add(f&#34;not_{net_in}&#34;, &#34;not&#34;, fanin=driver)
+            cl.connect(driver, net_in)
+
+    for k in key:
+        cl.set_type(k, &#34;input&#34;)
+
+    cg.lint(cl)
+    if avoid_loops and cl.is_cyclic():
+        raise ValueError(&#34;Locked circuit is cyclic&#34;)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.full_lock_mux"><code class="name flex">
+<span>def <span class="ident">full_lock_mux</span></span>(<span>c, bw, lw)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with a muxed-based model of Full-Lock.</p>
+<p>Uses muxes instead of the Banyan network, a relaxation that breaks symmetry
+and simplifies the model substantially.</p>
+<p>Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi
+Modeling Techniques for Logic Locking. In Proceedings
+of the International Conference on Computer Aided Design 2020 (ICCAD-39).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>banyan_width</code></strong> :&ensp;<code>int</code></dt>
+<dd>Width of Banyan network to use, must follow bw = 2**n, n&gt;1.</dd>
+<dt><strong><code>lut_width</code></strong> :&ensp;<code>int</code></dt>
+<dd>Width to use for inserted LUTs, must evenly divide bw.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def full_lock_mux(c, bw, lw):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with a muxed-based model of Full-Lock.
+
+    Uses muxes instead of the Banyan network, a relaxation that breaks symmetry
+    and simplifies the model substantially.
+
+    Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi
+    Modeling Techniques for Logic Locking. In Proceedings
+    of the International Conference on Computer Aided Design 2020 (ICCAD-39).
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    banyan_width: int
+            Width of Banyan network to use, must follow bw = 2**n, n&gt;1.
+    lut_width: int
+            Width to use for inserted LUTs, must evenly divide bw.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # first generate banyan, to get a valid mapping for the key
+    b = cg.Circuit()
+
+    # generate switch
+    m = cg.tx.strip_io(cg.logic.mux(2))
+    s = cg.Circuit(name=&#34;switch&#34;)
+    s.add_subcircuit(m, &#34;m0&#34;)
+    s.add_subcircuit(m, &#34;m1&#34;)
+    s.add(&#34;in_0&#34;, &#34;buf&#34;, fanout=[&#34;m0_in_0&#34;, &#34;m1_in_1&#34;])
+    s.add(&#34;in_1&#34;, &#34;buf&#34;, fanout=[&#34;m0_in_1&#34;, &#34;m1_in_0&#34;])
+    s.add(&#34;out_0&#34;, &#34;xor&#34;, fanin=&#34;m0_out&#34;)
+    s.add(&#34;out_1&#34;, &#34;xor&#34;, fanin=&#34;m1_out&#34;)
+    s.add(&#34;key_0&#34;, &#34;input&#34;, fanout=[&#34;m0_sel_0&#34;, &#34;m1_sel_0&#34;])
+    s.add(&#34;key_1&#34;, &#34;input&#34;, fanout=&#34;out_0&#34;)
+    s.add(&#34;key_2&#34;, &#34;input&#34;, fanout=&#34;out_1&#34;)
+
+    # generate banyan
+    I = int(2 * cg.utils.clog2(bw) - 2)
+    J = int(bw / 2)
+
+    # add switches
+    for i in range(I * J):
+        b.add_subcircuit(s, f&#34;swb_{i}&#34;)
+
+    # make connections
+    swb_ins = [f&#34;swb_{i//2}_in_{i%2}&#34; for i in range(I * J * 2)]
+    swb_outs = [f&#34;swb_{i//2}_out_{i%2}&#34; for i in range(I * J * 2)]
+    _connect_banyan(b, swb_ins, swb_outs, bw)
+
+    # get banyan io
+    net_ins = swb_ins[:bw]
+    net_outs = swb_outs[-bw:]
+
+    # generate key
+    key = {}
+    for i in range(I * J):
+        for j in range(3):
+            key[f&#34;swb_{i}_key_{j}&#34;] = choice([True, False])
+
+    # get banyan mapping
+    mapping = {}
+    polarity = {}
+    orig_result = cg.sat.solve(b, {**{n: False for n in net_ins}, **key})
+    for net_in in net_ins:
+        result = cg.sat.solve(
+            b, {**{n: False if n != net_in else True for n in net_ins}, **key}
+        )
+        for net_out in net_outs:
+            if result[net_out] != orig_result[net_out]:
+                mapping[net_in] = net_out
+                polarity[net_in] = result[net_out]
+                break
+
+    # lock with luts
+    cl, key = random_lut_lock(c, int(bw / lw), lw)
+
+    # generate mux
+    m = cg.tx.strip_io(cg.logic.mux(bw))
+
+    # add muxes and xors
+    banyan_to_mux = {}
+    for i in range(bw):
+        cl.add_subcircuit(m, f&#34;mux_{i}&#34;)
+        for b in range(cg.utils.clog2(bw)):
+            cl.add(f&#34;key_{i}_{b}&#34;, &#34;input&#34;, fanout=f&#34;mux_{i}_sel_{b}&#34;)
+        cl.add(f&#34;mux_{i}_xor&#34;, &#34;xor&#34;, fanin=f&#34;mux_{i}_out&#34;)
+        cl.add(f&#34;key_{i}_{cg.utils.clog2(bw)}&#34;, &#34;input&#34;, fanout=f&#34;mux_{i}_xor&#34;)
+        banyan_to_mux[net_outs[i]] = f&#34;mux_{i}_xor&#34;
+
+    # connect muxes to luts
+    for i in range(bw):
+        net_in = net_ins[i]
+        xor = banyan_to_mux[mapping[net_in]]
+        o = int(xor.split(&#34;_&#34;)[1])
+
+        driver = cl.fanin(f&#34;lut_{i//lw}_sel_{i%lw}&#34;).pop()
+        cl.disconnect(driver, f&#34;lut_{i//lw}_sel_{i%lw}&#34;)
+
+        if not polarity[net_in]:
+            driver = cl.add(f&#34;not_{net_in}&#34;, &#34;not&#34;, fanin=driver)
+            key[f&#34;key_{o}_{cg.utils.clog2(bw)}&#34;] = True
+        else:
+            key[f&#34;key_{o}_{cg.utils.clog2(bw)}&#34;] = False
+
+        for b in range(bw):
+            cl.connect(driver, f&#34;mux_{b}_in_{i}&#34;)
+
+        cl.connect(xor, f&#34;lut_{i//lw}_sel_{i%lw}&#34;)
+        for b, v in enumerate(cg.utils.int_to_bin(i, cg.utils.clog2(bw), True)):
+            key[f&#34;key_{o}_{b}&#34;] = v
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.inter_lock"><code class="name flex">
+<span>def <span class="ident">inter_lock</span></span>(<span>c, bw, reduced_swb=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with InterLock.</p>
+<p>Kamali, Hadi Mardani, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
+"Interlock: An intercorrelated logic and routing locking."
+In 2020 IEEE/ACM International Conference On Computer Aided Design (ICCAD),
+pp. 1-9. IEEE, 2020.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>circuit</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>bw</code></strong> :&ensp;<code>int</code></dt>
+<dd>The size of the keyed rounting block. A bw of m results
+in an m x m sized KeyRB.</dd>
+<dt><strong><code>reduced_swb</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, each switchbox is reduced from 3 keys to 1 key due to the fact
+that for 100% utilization, the other 2 keys will never be used. Essentially,
+the muxes at the output of the switchbox are removed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def inter_lock(c, bw, reduced_swb=False):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with InterLock.
+
+    Kamali, Hadi Mardani, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
+    &#34;Interlock: An intercorrelated logic and routing locking.&#34;
+    In 2020 IEEE/ACM International Conference On Computer Aided Design (ICCAD),
+    pp. 1-9. IEEE, 2020.
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    bw: int
+            The size of the keyed rounting block. A bw of m results
+            in an m x m sized KeyRB.
+    reduced_swb: bool
+            If True, each switchbox is reduced from 3 keys to 1 key due to the fact
+            that for 100% utilization, the other 2 keys will never be used. Essentially,
+            the muxes at the output of the switchbox are removed.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    cl = c.copy()
+    cg.lint(cl)
+
+    # generate switch
+    m = cg.tx.strip_io(cg.logic.mux(2))
+    s = cg.Circuit(name=&#34;switch&#34;)
+    s.add_subcircuit(m, &#34;m0&#34;)
+    s.add_subcircuit(m, &#34;m1&#34;)
+    s.add(&#34;in_0&#34;, &#34;input&#34;, fanout=[&#34;m0_in_0&#34;, &#34;m1_in_1&#34;])
+    s.add(&#34;in_1&#34;, &#34;input&#34;, fanout=[&#34;m0_in_1&#34;, &#34;m1_in_0&#34;])
+    s.add(&#34;ex_in_0&#34;, &#34;input&#34;)
+    s.add(&#34;ex_in_1&#34;, &#34;input&#34;)
+    # f1 and f2 starts as &#39;and&#39; gates, must be updated later
+    s.add(&#34;f1_out&#34;, &#34;and&#34;, fanin=[&#34;m0_out&#34;, &#34;ex_in_0&#34;])
+    s.add(&#34;f2_out&#34;, &#34;and&#34;, fanin=[&#34;m1_out&#34;, &#34;ex_in_1&#34;])
+    s.add(&#34;key_0&#34;, &#34;input&#34;, fanout=[&#34;m0_sel_0&#34;, &#34;m1_sel_0&#34;])
+    s.add(&#34;out_0&#34;, &#34;buf&#34;, output=True)
+    s.add(&#34;out_1&#34;, &#34;buf&#34;, output=True)
+    if not reduced_swb:
+        s.add_subcircuit(m, &#34;m2&#34;)
+        s.add_subcircuit(m, &#34;m3&#34;)
+        s.add(&#34;key_1&#34;, &#34;input&#34;, fanout=&#34;m2_sel_0&#34;)
+        s.add(&#34;key_2&#34;, &#34;input&#34;, fanout=&#34;m3_sel_0&#34;)
+        s.connect(&#34;f1_out&#34;, &#34;m2_in_0&#34;)
+        s.connect(&#34;f2_out&#34;, &#34;m3_in_1&#34;)
+        s.connect(&#34;m0_out&#34;, &#34;m3_in_0&#34;)
+        s.connect(&#34;m1_out&#34;, &#34;m2_in_1&#34;)
+        s.connect(&#34;m2_out&#34;, &#34;out_0&#34;)
+        s.connect(&#34;m3_out&#34;, &#34;out_1&#34;)
+    else:
+        s.connect(&#34;f1_out&#34;, &#34;out_0&#34;)
+        s.connect(&#34;f2_out&#34;, &#34;out_1&#34;)
+
+    sbb_inputs = [&#34;in_0&#34;, &#34;in_1&#34;, &#34;ex_in_0&#34;, &#34;ex_in_1&#34;, &#34;key_0&#34;]
+    if not reduced_swb:
+        sbb_inputs += [&#34;key_1&#34;, &#34;key_2&#34;]
+    sbb = cg.BlackBox(&#34;switch&#34;, sbb_inputs, [&#34;out_0&#34;, &#34;out_1&#34;],)
+
+    # Select paths to embed in the routing network
+    path_length = 2 * cg.utils.clog2(bw) - 2
+    paths = []
+
+    filtered_gates = set()
+
+    def filter_gate(n):
+        gate = n
+        gates = [n]
+        for _ in range(path_length):
+            if (
+                len(cl.fanin(gate)) != 2
+                or len(cl.fanout(gate)) != 1
+                or cl.is_output(gate)
+                or gate in filtered_gates
+                or len(cl.fanin(gate) &amp; filtered_gates) &gt; 0
+                or len(cl.fanout(gate) &amp; filtered_gates) &gt; 0
+            ):
+                return False
+            gate = cl.fanout(gate).pop()
+            gates.append(gate)
+        filtered_gates.update(gates)
+        for gate in gates:
+            filtered_gates.update(cl.fanin(gate))
+        return True
+
+    candidate_gates = filter(filter_gate, cl.nodes())
+    for _ in range(bw):
+        try:
+            gate = next(candidate_gates)
+        except StopIteration as e:
+            raise ValueError(&#34;Not enough candidate gates found for locking&#34;) from e
+        path = [gate]
+        for _ in range(path_length - 1):
+            gate = cl.fanout(gate).pop()
+            path.append(gate)
+        paths.append(path)
+
+    # generate banyan with J rows and I columns of SwBs
+    I = path_length
+    J = int(bw / 2)
+
+    for i in range(I * J):
+        cl.add_blackbox(sbb, f&#34;swb_{i}&#34;)
+
+    # make connections
+    swb_ins = [f&#34;swb_{i//2}.in_{i%2}&#34; for i in range(I * J * 2)]
+    swb_outs = [f&#34;swb_{i//2}.out_{i%2}&#34; for i in range(I * J * 2)]
+    _connect_banyan_bb(cl, swb_ins, swb_outs, bw)
+
+    # generate key
+    # In the example from the paper, the paths in a SWB directly from an
+    # input to an output are never used. Starting with that implemetation.
+    # Could sometimes choose paths less than `path_length` and use these
+    # connections with a decoy external input, but such a strategy is not
+    # discussed in the paper.
+    swaps = []
+    key = {}
+    for i in range(I * J):
+        swaps.append(choice([True, False]))
+        if swaps[-1]:
+            key[f&#34;swb_{i}_key_0&#34;] = True
+        else:
+            key[f&#34;swb_{i}_key_0&#34;] = False
+        if not reduced_swb:
+            key[f&#34;swb_{i}_key_1&#34;] = False
+            key[f&#34;swb_{i}_key_2&#34;] = True
+
+    f_gates = {}
+
+    # Add paths to banyan
+    # Get a random intial ordering of paths
+    input_order = list(range(bw))
+    shuffle(input_order)
+    for i, p_idx in enumerate(input_order):
+        path = paths[p_idx]
+        swb_idx = i // 2
+        i_idx = i % 2
+        prev_node = cl.fanin(path[0]).pop()
+        cl.connect(prev_node, f&#34;swb_{swb_idx}.in_{i_idx}&#34;)
+        for j, n in enumerate(path):
+            o_idx = i_idx ^ int(swaps[swb_idx])
+            ex_i = (cl.fanin(n) - {prev_node}).pop()
+            cl.connect(ex_i, f&#34;swb_{swb_idx}.ex_in_{o_idx}&#34;)
+            f_gates[f&#34;swb_{swb_idx}_f{o_idx+1}_out&#34;] = cl.type(n)
+            if j != len(path) - 1:
+                next_n = cl.fanout(f&#34;swb_{swb_idx}.out_{o_idx}&#34;).pop()
+                next_n = cl.fanout(next_n).pop()
+                swb_idx = int(next_n.split(&#34;.&#34;)[0].split(&#34;_&#34;)[-1])
+                i_idx = int(next_n.split(&#34;.&#34;)[-1].split(&#34;_&#34;)[-1])
+                prev_node = n
+            else:
+                for fo in cl.fanout(n):
+                    cl.disconnect(n, fo)
+                    try:
+                        conn = cl.fanout(f&#34;swb_{swb_idx}.out_{o_idx}&#34;).pop()
+                    except KeyError:
+                        conn = cl.add(
+                            f&#34;swb_{swb_idx}_out_{o_idx}_load&#34;,
+                            &#34;buf&#34;,
+                            fanin=f&#34;swb_{swb_idx}.out_{o_idx}&#34;,
+                        )
+                    cl.connect(conn, fo)
+
+    for path in paths:
+        for node in path:
+            cl.remove(node)
+
+    for i in range(I * J):
+        cl.fill_blackbox(f&#34;swb_{i}&#34;, s)
+
+    for k, v in f_gates.items():
+        cl.set_type(k, v)
+
+    for k in key:
+        cl.set_type(k, &#34;input&#34;)
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.lebl"><code class="name flex">
+<span>def <span class="ident">lebl</span></span>(<span>c, bw, ng)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with Logic-Enhanced Banyan Locking.</p>
+<p>Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi Modeling Techniques
+for Logic Locking. In Proceedings of the International Conference on
+Computer Aided Design 2020 (ICCAD-39).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>bw</code></strong> :&ensp;<code>int</code></dt>
+<dd>Width of Banyan network.</dd>
+<dt><strong><code>lw</code></strong> :&ensp;<code>int</code></dt>
+<dd>Minimum number of gates mapped to network.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lebl(c, bw, ng):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with Logic-Enhanced Banyan Locking.
+
+    Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi Modeling Techniques
+    for Logic Locking. In Proceedings of the International Conference on
+    Computer Aided Design 2020 (ICCAD-39).
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    bw: int
+            Width of Banyan network.
+    lw: int
+            Minimum number of gates mapped to network.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # generate switch and mux
+    s = cg.Circuit(name=&#34;switch&#34;)
+    m2 = cg.tx.strip_io(cg.logic.mux(2))
+    s.add_subcircuit(m2, &#34;m2_0&#34;)
+    s.add_subcircuit(m2, &#34;m2_1&#34;)
+    m4 = cg.tx.strip_io(cg.logic.mux(4))
+    s.add_subcircuit(m4, &#34;m4_0&#34;)
+    s.add_subcircuit(m4, &#34;m4_1&#34;)
+    s.add(&#34;in_0&#34;, &#34;buf&#34;, fanout=[&#34;m2_0_in_0&#34;, &#34;m2_1_in_1&#34;])
+    s.add(&#34;in_1&#34;, &#34;buf&#34;, fanout=[&#34;m2_0_in_1&#34;, &#34;m2_1_in_0&#34;])
+    s.add(&#34;out_0&#34;, &#34;buf&#34;, fanin=&#34;m4_0_out&#34;)
+    s.add(&#34;out_1&#34;, &#34;buf&#34;, fanin=&#34;m4_1_out&#34;)
+    s.add(&#34;key_0&#34;, &#34;input&#34;, fanout=[&#34;m2_0_sel_0&#34;, &#34;m2_1_sel_0&#34;])
+    s.add(&#34;key_1&#34;, &#34;input&#34;, fanout=[&#34;m4_0_sel_0&#34;, &#34;m4_1_sel_0&#34;])
+    s.add(&#34;key_2&#34;, &#34;input&#34;, fanout=[&#34;m4_0_sel_1&#34;, &#34;m4_1_sel_1&#34;])
+
+    # generate banyan
+    I = int(2 * cg.utils.clog2(bw) - 2)
+    J = int(bw / 2)
+
+    # add switches and muxes
+    for i in range(I * J):
+        cl.add_subcircuit(s, f&#34;swb_{i}&#34;)
+
+    # make connections
+    swb_ins = [f&#34;swb_{i//2}_in_{i%2}&#34; for i in range(I * J * 2)]
+    swb_outs = [f&#34;swb_{i//2}_out_{i%2}&#34; for i in range(I * J * 2)]
+    _connect_banyan(cl, swb_ins, swb_outs, bw)
+
+    # get banyan io
+    net_ins = swb_ins[:bw]
+    net_outs = swb_outs[-bw:]
+
+    # generate key
+    key = {f&#34;swb_{i//3}_key_{i%3}&#34;: choice([True, False]) for i in range(3 * I * J)}
+
+    # generate connections between banyan nodes
+    bfi = {n: set() for n in swb_outs + net_ins}
+    bfo = {n: set() for n in swb_outs + net_ins}
+    for n in swb_outs + net_ins:
+        if cl.fanout(n):
+            fo_node = cl.fanout(n).pop()
+            swb_i = fo_node.split(&#34;_&#34;)[1]
+            bfi[f&#34;swb_{swb_i}_out_0&#34;].add(n)
+            bfi[f&#34;swb_{swb_i}_out_1&#34;].add(n)
+            bfo[n].add(f&#34;swb_{swb_i}_out_0&#34;)
+            bfo[n].add(f&#34;swb_{swb_i}_out_1&#34;)
+
+    # find a mapping of circuit onto banyan
+    net_map = IDPool()
+    for bn in swb_outs + net_ins:
+        for cn in c:
+            net_map.id(f&#34;m_{bn}_{cn}&#34;)
+
+    # mapping implications
+    clauses = []
+    for bn in swb_outs + net_ins:
+        # fanin
+        if bfi[bn]:
+            for cn in c:
+                if c.fanin(cn):
+                    for fcn in c.fanin(cn):
+                        clause = [-net_map.id(f&#34;m_{bn}_{cn}&#34;)]
+                        clause += [net_map.id(f&#34;m_{fbn}_{fcn}&#34;) for fbn in bfi[bn]]
+                        clause += [net_map.id(f&#34;m_{fbn}_{cn}&#34;) for fbn in bfi[bn]]
+                        clauses.append(clause)
+                else:
+                    clause = [-net_map.id(f&#34;m_{bn}_{cn}&#34;)]
+                    clause += [net_map.id(f&#34;m_{fbn}_{cn}&#34;) for fbn in bfi[bn]]
+                    clauses.append(clause)
+
+        # fanout
+        if bfo[bn]:
+            for cn in c:
+                clause = [-net_map.id(f&#34;m_{bn}_{cn}&#34;)]
+                clause += [net_map.id(f&#34;m_{fbn}_{cn}&#34;) for fbn in bfo[bn]]
+                for fcn in c.fanout(cn):
+                    clause += [net_map.id(f&#34;m_{fbn}_{fcn}&#34;) for fbn in bfo[bn]]
+                clauses.append(clause)
+
+    # no feed through
+    for cn in c:
+        net_map.id(f&#34;INPUT_OR_{cn}&#34;)
+        net_map.id(f&#34;OUTPUT_OR_{cn}&#34;)
+        clauses.append(
+            [-net_map.id(f&#34;INPUT_OR_{cn}&#34;)]
+            + [net_map.id(f&#34;m_{bn}_{cn}&#34;) for bn in net_ins]
+        )
+        clauses.append(
+            [-net_map.id(f&#34;OUTPUT_OR_{cn}&#34;)]
+            + [net_map.id(f&#34;m_{bn}_{cn}&#34;) for bn in net_outs]
+        )
+        for bn in net_ins:
+            clauses.append([net_map.id(f&#34;INPUT_OR_{cn}&#34;), -net_map.id(f&#34;m_{bn}_{cn}&#34;)])
+        for bn in net_outs:
+            clauses.append([net_map.id(f&#34;OUTPUT_OR_{cn}&#34;), -net_map.id(f&#34;m_{bn}_{cn}&#34;)])
+        clauses.append([-net_map.id(f&#34;OUTPUT_OR_{cn}&#34;), -net_map.id(f&#34;INPUT_OR_{cn}&#34;)])
+
+    # at least ngates
+    for bn in swb_outs + net_ins:
+        net_map.id(f&#34;NGATES_OR_{bn}&#34;)
+        clauses.append(
+            [-net_map.id(f&#34;NGATES_OR_{bn}&#34;)] + [net_map.id(f&#34;m_{bn}_{cn}&#34;) for cn in c]
+        )
+        for cn in c:
+            clauses.append([net_map.id(f&#34;NGATES_OR_{bn}&#34;), -net_map.id(f&#34;m_{bn}_{cn}&#34;)])
+    clauses += CardEnc.atleast(
+        bound=ng,
+        lits=[net_map.id(f&#34;NGATES_OR_{bn}&#34;) for bn in swb_outs + net_ins],
+        vpool=net_map,
+    ).clauses
+
+    # at most one mapping per out
+    for bn in swb_outs + net_ins:
+        clauses += CardEnc.atmost(
+            lits=[net_map.id(f&#34;m_{bn}_{cn}&#34;) for cn in c], vpool=net_map
+        ).clauses
+
+    # limit number of times a gate is mapped to net outputs to fanout of gate
+    for cn in c:
+        lits = [net_map.id(f&#34;m_{bn}_{cn}&#34;) for bn in net_outs]
+        bound = len(c.fanout(cn))
+        if len(lits) &lt; bound:
+            continue
+        clauses += CardEnc.atmost(bound=bound, lits=lits, vpool=net_map).clauses
+
+    # prohibit outputs from net
+    for bn in swb_outs + net_ins:
+        for cn in c.outputs():
+            clauses += [[-net_map.id(f&#34;m_{bn}_{cn}&#34;)]]
+
+    # solve
+    solver = Cadical(bootstrap_with=clauses)
+    if not solver.solve():
+        raise ValueError(f&#34;No config for width &#39;{bw}&#39;&#34;)
+    model = solver.get_model()
+
+    # get mapping
+    mapping = {}
+    for bn in swb_outs + net_ins:
+        selected_gates = [cn for cn in c if model[net_map.id(f&#34;m_{bn}_{cn}&#34;) - 1] &gt; 0]
+        if len(selected_gates) &gt; 1:
+            raise ValueError(f&#34;Multiple gates mapped to &#39;{bn}&#39;&#34;)
+        mapping[bn] = selected_gates[0] if selected_gates else None
+
+    potential_net_fanins = list(
+        c.nodes()
+        - (c.endpoints() | set(mapping.values()) | mapping.keys() | c.startpoints())
+    )
+
+    # connect net inputs
+    for bn in net_ins:
+        if mapping[bn]:
+            cl.connect(mapping[bn], bn)
+        else:
+            cl.connect(choice(potential_net_fanins), bn)
+    mapping.update({cl.fanin(bn).pop(): cl.fanin(bn).pop() for bn in net_ins})
+    potential_net_fanouts = list(
+        c.nodes()
+        - (c.startpoints() | set(mapping.values()) | mapping.keys() | c.endpoints())
+    )
+
+    # selected_fo = {}
+
+    # connect switch boxes
+    for i, bn in enumerate(swb_outs):
+        # get keys
+        if key[f&#34;swb_{i//2}_key_1&#34;] and key[f&#34;swb_{i//2}_key_2&#34;]:
+            k = 3
+        elif not key[f&#34;swb_{i//2}_key_1&#34;] and key[f&#34;swb_{i//2}_key_2&#34;]:
+            k = 2
+        elif key[f&#34;swb_{i//2}_key_1&#34;] and not key[f&#34;swb_{i//2}_key_2&#34;]:
+            k = 1
+        elif not key[f&#34;swb_{i//2}_key_1&#34;] and not key[f&#34;swb_{i//2}_key_2&#34;]:
+            k = 0
+        switch_key = 1 if key[f&#34;swb_{i//2}_key_0&#34;] == 1 else 0
+
+        mux_input = f&#34;swb_{i//2}_m4_{i%2}_in_{k}&#34;
+
+        # connect inner nodes
+        mux_gate_types = set()
+
+        # constant output, hookup to a node that is already in the affected outputs
+        # fanin, not in others
+        if not mapping[bn] and bn in net_outs:
+            decoy_fanout_gate = choice(potential_net_fanouts)
+            # selected_fo[bn] = decoy_fanout_gate
+            if cl.type(decoy_fanout_gate) in [&#34;and&#34;, &#34;nand&#34;]:
+                cl.set_type(mux_input, &#34;1&#34;)
+            elif cl.type(decoy_fanout_gate) in [&#34;or&#34;, &#34;nor&#34;, &#34;xor&#34;, &#34;xnor&#34;]:
+                cl.set_type(mux_input, &#34;0&#34;)
+            elif cl.type(decoy_fanout_gate) in [&#34;buf&#34;]:
+                if randint(0, 1):
+                    cl.set_type(mux_input, &#34;1&#34;)
+                    cl.set_type(decoy_fanout_gate, choice([&#34;and&#34;, &#34;xnor&#34;]))
+                else:
+                    cl.set_type(mux_input, &#34;0&#34;)
+                    cl.set_type(decoy_fanout_gate, choice([&#34;or&#34;, &#34;xor&#34;]))
+            elif cl.type(decoy_fanout_gate) in [&#34;not&#34;]:
+                if randint(0, 1):
+                    cl.set_type(mux_input, &#34;1&#34;)
+                    cl.set_type(decoy_fanout_gate, choice([&#34;nand&#34;, &#34;xor&#34;]))
+                else:
+                    cl.set_type(mux_input, &#34;0&#34;)
+                    cl.set_type(decoy_fanout_gate, choice([&#34;nor&#34;, &#34;xnor&#34;]))
+            elif cl.type(decoy_fanout_gate) in [&#34;0&#34;, &#34;1&#34;]:
+                cl.set_type(mux_input, cl.type(decoy_fanout_gate))
+                cl.set_type(decoy_fanout_gate, &#34;buf&#34;)
+            else:
+                raise ValueError(f&#34;Invalid gate type &#39;{cl.type(decoy_fanout_gate)}&#39;&#34;)
+            cl.connect(bn, decoy_fanout_gate)
+            mux_gate_types.add(cl.type(mux_input))
+
+        # feedthrough
+        elif mapping[bn] in [mapping[fbn] for fbn in bfi[bn]]:
+            cl.set_type(mux_input, &#34;buf&#34;)
+            mux_gate_types.add(&#34;buf&#34;)
+            if mapping[cl.fanin(f&#34;swb_{i//2}_in_0&#34;).pop()] == mapping[bn]:
+                cl.connect(f&#34;swb_{i//2}_m2_{switch_key}_out&#34;, mux_input)
+            else:
+                cl.connect(f&#34;swb_{i//2}_m2_{1-switch_key}_out&#34;, mux_input)
+
+        # gate
+        elif mapping[bn]:
+            cl.set_type(mux_input, cl.type(mapping[bn]))
+            mux_gate_types.add(cl.type(mapping[bn]))
+            gfi = cl.fanin(mapping[bn])
+            if mapping[cl.fanin(f&#34;swb_{i//2}_in_0&#34;).pop()] in gfi:
+                cl.connect(f&#34;swb_{i//2}_m2_{switch_key}_out&#34;, mux_input)
+                gfi.remove(mapping[cl.fanin(f&#34;swb_{i//2}_in_0&#34;).pop()])
+            if mapping[cl.fanin(f&#34;swb_{i//2}_in_1&#34;).pop()] in gfi:
+                cl.connect(f&#34;swb_{i//2}_m2_{1-switch_key}_out&#34;, mux_input)
+
+        # mapped to None, any key works
+        else:
+            k = None
+
+        # fill out random gates
+        for j in range(4):
+            if j != k:
+                t = choice(
+                    tuple(
+                        {
+                            &#34;buf&#34;,
+                            &#34;or&#34;,
+                            &#34;nor&#34;,
+                            &#34;and&#34;,
+                            &#34;nand&#34;,
+                            &#34;not&#34;,
+                            &#34;xor&#34;,
+                            &#34;xnor&#34;,
+                            &#34;0&#34;,
+                            &#34;1&#34;,
+                        }
+                        - mux_gate_types
+                    )
+                )
+                mux_gate_types.add(t)
+                mux_input = f&#34;swb_{i//2}_m4_{i%2}_in_{j}&#34;
+                cl.set_type(mux_input, t)
+                if t in (&#34;not&#34;, &#34;buf&#34;):
+                    # pick a random fanin
+                    cl.connect(f&#34;swb_{i//2}_m2_{randint(0,1)}_out&#34;, mux_input)
+                elif t in (&#34;0&#34;, &#34;1&#34;):
+                    pass
+                else:
+                    cl.connect(f&#34;swb_{i//2}_m2_0_out&#34;, mux_input)
+                    cl.connect(f&#34;swb_{i//2}_m2_1_out&#34;, mux_input)
+
+    # connect outputs non constant outs
+    rev_mapping = {}
+    for bn in net_outs:
+        if mapping[bn]:
+            if mapping[bn] not in rev_mapping:
+                rev_mapping[mapping[bn]] = set()
+            rev_mapping[mapping[bn]].add(bn)
+
+    for cn, val in rev_mapping.items():
+        for fcn, bn in zip_longest(cl.fanout(cn), val, fillvalue=list(val)[0]):
+            cl.connect(bn, fcn)
+
+    # delete mapped gates
+    deleted = True
+    while deleted:
+        deleted = False
+        for n in cl.nodes():
+            # node and all fanout are in the net
+            if n not in mapping and n in mapping.values():
+                if all(
+                    s not in mapping and s in mapping.values() for s in cl.fanout(n)
+                ):
+                    cl.remove(n)
+                    deleted = True
+            # node in net fanout
+            if n in [mapping[o] for o in net_outs] and n in cl:
+                cl.remove(n)
+                deleted = True
+
+    for k in key:
+        cl.set_type(k, &#34;input&#34;)
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.lut_lock"><code class="name flex">
+<span>def <span class="ident">lut_lock</span></span>(<span>c, num_gates, count_keys=False, skip_fi1=True, rank_by_shared_fanin=False, key_prefix='key_')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with NB2-MO-HSC LUT-lock.</p>
+<p>H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
+"LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
+ASIC-Hardware Protection," 2018 IEEE Computer Society Annual Symposium on
+VLSI (ISVLSI), Hong Kong, 2018, pp. 405-410.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>circuit</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>num_gates</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of gates to lock.</dd>
+<dt><strong><code>count_keys</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If true, continue locking until at least <code>num_gates</code> keys are
+added instead of <code>num_gates</code> gates.</dd>
+<dt><strong><code>skip_fi1</code></strong> :&ensp;<code>int</code></dt>
+<dd>If True, nodes with a fanin of 1 (i.e. buf or inv) will not
+be considered for locking.</dd>
+<dt><strong><code>rank_by_shared_fanin</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, the output with the least shared fanin with other outputs
+will be selected for locking first. By default, the output with
+the least amount of total fanin is selected for locking first.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>if there are not enough viable gates to lock.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lut_lock(
+    c,
+    num_gates,
+    count_keys=False,
+    skip_fi1=True,
+    rank_by_shared_fanin=False,
+    key_prefix=&#34;key_&#34;,
+):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with NB2-MO-HSC LUT-lock.
+
+    H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
+    &#34;LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
+    ASIC-Hardware Protection,&#34; 2018 IEEE Computer Society Annual Symposium on
+    VLSI (ISVLSI), Hong Kong, 2018, pp. 405-410.
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    num_gates: int
+            The number of gates to lock.
+    count_keys: bool
+            If true, continue locking until at least `num_gates` keys are
+            added instead of `num_gates` gates.
+    skip_fi1: int
+            If True, nodes with a fanin of 1 (i.e. buf or inv) will not
+            be considered for locking.
+    rank_by_shared_fanin: bool
+            If True, the output with the least shared fanin with other outputs
+            will be selected for locking first. By default, the output with
+            the least amount of total fanin is selected for locking first.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    Raises
+    ------
+    ValueError
+            if there are not enough viable gates to lock.
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    def calc_skew(gate, cl):
+        d = {False: 0, True: 0}
+        fanin = list(cl.fanin(gate))
+
+        # create subcircuit containing just gate for simulation
+        simc = cg.Circuit()
+        for i in fanin:
+            simc.add(i, &#34;input&#34;)
+        simc.add(gate, cl.type(gate), fanin=fanin)
+
+        # simulate
+        for i, vs in enumerate(product([False, True], repeat=len(fanin))):
+            assumptions = dict(zip(fanin, vs[::-1]))
+            result = cg.sat.solve(simc, assumptions)
+            if not result:
+                d[False] += 1
+            else:
+                d[result[gate]] += 1
+        num_combos = 2 ** len(fanin)
+        return abs(d[False] / num_combos - d[True] / num_combos)
+
+    def replace_lut(gate, cl):
+        key = {}
+        m = cg.logic.mux(2 ** len(cl.fanin(gate)))
+        fanout = list(cl.fanout(gate))
+        fanin = list(cl.fanin(gate))
+
+        # create LUT
+        cl.add_subcircuit(m, f&#34;lut_{gate}&#34;)
+
+        # create subcircuit containing just gate for simulation
+        simc = cg.Circuit()
+        for i in fanin:
+            simc.add(i, &#34;input&#34;)
+        simc.add(gate, cl.type(gate), fanin=fanin)
+
+        # connect keys
+        for i, vs in enumerate(product([False, True], repeat=len(fanin))):
+            assumptions = dict(zip(fanin, vs[::-1]))
+            cl.add(f&#34;{key_prefix}{gate}_{i}&#34;, &#34;input&#34;, fanout=f&#34;lut_{gate}_in_{i}&#34;)
+            result = cg.sat.solve(simc, assumptions)
+            if not result:
+                key[f&#34;{key_prefix}{gate}_{i}&#34;] = False
+            else:
+                key[f&#34;{key_prefix}{gate}_{i}&#34;] = result[gate]
+
+        # connect out
+        cl.disconnect(gate, fanout)
+        cl.connect(f&#34;lut_{gate}_out&#34;, fanout)
+
+        # connect sel
+        for i, f in enumerate(fanin):
+            cl.connect(f, f&#34;lut_{gate}_sel_{i}&#34;)
+
+        # delete gate
+        cl.remove(gate)
+        return key, [f&#34;lut_{gate}_{n}&#34; for n in m.nodes()], f&#34;lut_{gate}_out&#34;
+
+    def continue_locking(locked_gates, num_gates, keys, count_keys):
+        if count_keys:
+            return len(keys) &lt; num_gates
+        return locked_gates &lt; num_gates
+
+    locked_gates = 0
+    outputs = list(cl.outputs())
+    if rank_by_shared_fanin:
+
+        def rank_output(x):
+            other_outputs = [o for o in outputs if o != x]
+            other_fanin = cl.transitive_fanin(other_outputs)
+            curr_fanin = cl.transitive_fanin(x)
+            return len(curr_fanin &amp; other_fanin)
+
+    else:
+
+        def rank_output(x):
+            return len(cl.transitive_fanin(x))
+
+    outputs.sort(key=rank_output)
+    candidates = []
+    forbidden_nodes = set()
+    keys = {}
+    while continue_locking(locked_gates, num_gates, keys, count_keys):
+        if not candidates:
+            outputs = [o for o in outputs if o not in forbidden_nodes]
+            try:
+                candidates.append(outputs.pop(0))
+            except IndexError as e:
+                raise ValueError(
+                    &#34;Ran out of candidate gates at &#34; f&#34;{locked_gates} gates.&#34;
+                ) from e
+        else:
+            candidate = candidates.pop(0)
+            candidate_is_output = cl.is_output(candidate)
+            children = cl.fanin(candidate)
+            if candidate in forbidden_nodes:
+                candidates += [g for g in children if g not in forbidden_nodes]
+                continue
+            forbidden_nodes.add(candidate)
+            if len(children) == 0:
+                continue
+            if skip_fi1 and len(children) == 1:
+                child = children.pop()
+                if child not in forbidden_nodes | set(candidates):
+                    candidates.insert(0, child)
+                continue
+            key, nodes, output_to_relabel = replace_lut(candidate, cl)
+            keys.update(key)
+            forbidden_nodes.update(nodes)
+            cl = cg.tx.relabel(cl, {output_to_relabel: candidate})
+            if candidate_is_output:
+                cl.set_output(candidate)
+            for g1 in children:
+                forbidden_nodes.add(g1)
+                for g2 in cl.fanin(g1):
+                    if g2 not in forbidden_nodes | set(candidates):
+                        candidates.append(g2)
+            # Sort by least number of outputs in fanout cone, then most skew
+            candidates.sort(
+                key=lambda x: (
+                    len(cl.transitive_fanout(x) &amp; cl.outputs()),
+                    -calc_skew(x, cl),
+                )
+            )
+            locked_gates += 1
+
+    return cl, keys</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.mux_lock"><code class="name flex">
+<span>def <span class="ident">mux_lock</span></span>(<span>c, keylen, avoid_loops=False, key_prefix='key_')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with a mux lock.</p>
+<p>J. Rajendran et al., "Fault Analysis-Based Logic Encryption," in IEEE
+Transactions on Computers, vol. 64, no. 2, pp. 410-424, Feb. 2015,
+doi: 10.1109/TC.2013.193.</p>
+<p>Note that a random mux selection is used, not fault-based.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>keylen</code></strong> :&ensp;<code>int</code></dt>
+<dd>the number of bits in the key.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mux_lock(c, keylen, avoid_loops=False, key_prefix=&#34;key_&#34;):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with a mux lock.
+
+    J. Rajendran et al., &#34;Fault Analysis-Based Logic Encryption,&#34; in IEEE
+    Transactions on Computers, vol. 64, no. 2, pp. 410-424, Feb. 2015,
+    doi: 10.1109/TC.2013.193.
+
+    Note that a random mux selection is used, not fault-based.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    keylen: int
+            the number of bits in the key.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # get 2:1 mux
+    m = cg.logic.mux(2)
+
+    # randomly select gates
+    gates = sample(tuple(cl.nodes() - cl.outputs()), keylen)
+    if avoid_loops:
+        decoy_gates = set()
+    else:
+        decoy_gates = sample(tuple(cl.nodes() - cl.outputs()), keylen)
+
+    # insert key gates
+    key = {}
+    for i, gate in enumerate(gates):
+        # select random key value
+        key_val = choice([True, False])
+
+        if avoid_loops:
+            decoy_gate = choice(
+                tuple(
+                    c.nodes()
+                    - c.io()
+                    - set(gates)
+                    - cl.transitive_fanout(gate)
+                    - decoy_gates
+                )
+            )
+            decoy_gates.add(decoy_gate)
+        else:
+            decoy_gate = decoy_gates[i]
+
+        # create and connect mux
+        fanout = cl.fanout(gate)
+        cl.disconnect(gate, fanout)
+        cl.add_subcircuit(m, f&#34;mux_{i}&#34;)
+        cl.connect(f&#34;mux_{i}_out&#34;, fanout)
+        key_in = cl.add(f&#34;{key_prefix}{i}&#34;, &#34;input&#34;, fanout=f&#34;mux_{i}_sel_0&#34;, uid=True)
+        key[key_in] = key_val
+        if key_val:
+            cl.connect(gate, f&#34;mux_{i}_in_1&#34;)
+            cl.connect(decoy_gate, f&#34;mux_{i}_in_0&#34;)
+        else:
+            cl.connect(gate, f&#34;mux_{i}_in_0&#34;)
+            cl.connect(decoy_gate, f&#34;mux_{i}_in_1&#34;)
+
+    cg.lint(cl)
+    if avoid_loops and cl.is_cyclic():
+        raise ValueError(&#34;Locked circuit is cyclic&#34;)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.random_lut_lock"><code class="name flex">
+<span>def <span class="ident">random_lut_lock</span></span>(<span>c, num_gates, lut_width, gates=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph by replacing random gates with LUTs.</p>
+<p>This is kind of like applying LUT-lock with no replacement strategy.
+(H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
+"LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
+ASIC-Hardware Protection," 2018 IEEE Computer Society Annual Symposium on
+VLSI (ISVLSI), Hong Kong, 2018, pp. 405-410.)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>circuit</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>num_gates</code></strong> :&ensp;<code>int</code></dt>
+<dd>the number of gates to lock.</dd>
+<dt><strong><code>lut_width</code></strong> :&ensp;<code>int</code></dt>
+<dd>LUT width, defines maximum fanin of locked gates.</dd>
+<dt><strong><code>gates</code></strong> :&ensp;<code>list</code> of <code>str</code></dt>
+<dd>The gates to lock. If not provided, will be randomly sampled</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def random_lut_lock(c, num_gates, lut_width, gates=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph by replacing random gates with LUTs.
+
+    This is kind of like applying LUT-lock with no replacement strategy.
+    (H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
+    &#34;LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
+    ASIC-Hardware Protection,&#34; 2018 IEEE Computer Society Annual Symposium on
+    VLSI (ISVLSI), Hong Kong, 2018, pp. 405-410.)
+
+    Parameters
+    ----------
+    circuit: circuitgraph.CircuitGraph
+            Circuit to lock.
+    num_gates: int
+            the number of gates to lock.
+    lut_width: int
+            LUT width, defines maximum fanin of locked gates.
+    gates: list of str
+            The gates to lock. If not provided, will be randomly sampled
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # parse mux
+    m = cg.logic.mux(2 ** lut_width)
+
+    # randomly select gates
+    potential_gates = {g for g in cl.nodes() - cl.io() if len(cl.fanin(g)) &lt;= lut_width}
+    if gates:
+        if len(gates) != num_gates:
+            raise ValueError(
+                f&#34;Got &#39;num_gates&#39; of {num_gates} but length of &#34;
+                f&#34;&#39;gates&#39; is {len(gates)}&#34;
+            )
+        if any(len(cl.fanin(g)) &gt; lut_width for g in gates):
+            raise ValueError(&#34;cannot lock a gate with fanin greater than &#34; &#34;lut_width&#34;)
+        if any(g in cl.io() for g in gates):
+            raise ValueError(&#34;cannot lock an input/output gate&#34;)
+    else:
+        gates = sample(tuple(potential_gates), num_gates)
+    potential_gates -= set(gates)
+    potential_gates -= cl.transitive_fanout(gates)
+
+    # insert key gates
+    key = {}
+    for i, gate in enumerate(gates):
+
+        fanout = list(cl.fanout(gate))
+        fanin = list(cl.fanin(gate))
+        try:
+            padding = sample(
+                tuple(potential_gates - cl.fanin(gate)), lut_width - len(fanin)
+            )
+        except ValueError as e:
+            raise ValueError(&#34;Could not find enough viable gates for padding&#34;) from e
+
+        # create LUT
+        cl.add_subcircuit(m, f&#34;lut_{i}&#34;)
+
+        # connect keys
+        for j, vs in enumerate(product([False, True], repeat=len(fanin + padding))):
+            assumptions = {
+                s: v for s, v in zip(fanin + padding, vs[::-1]) if s in fanin
+            }
+            key_in = cl.add(
+                f&#34;key_{i*2**lut_width+j}&#34;, &#34;input&#34;, fanout=f&#34;lut_{i}_in_{j}&#34;, uid=True
+            )
+            result = cg.sat.solve(c, assumptions)
+            if not result:
+                key[key_in] = False
+            else:
+                key[key_in] = result[gate]
+
+        # connect out
+        cl.disconnect(gate, fanout)
+        cl.connect(f&#34;lut_{i}_out&#34;, fanout)
+
+        # connect sel
+        for j, f in enumerate(fanin + padding):
+            cl.connect(f, f&#34;lut_{i}_sel_{j}&#34;)
+
+        # delete gate
+        cl.remove(gate)
+        cl = cg.tx.relabel(cl, {f&#34;lut_{i}_out&#34;: gate})
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.sfll_flex"><code class="name flex">
+<span>def <span class="ident">sfll_flex</span></span>(<span>c, width, n, target_output=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with SFLL-flex.</p>
+<p>Note that in this implementation the original circuit is not
+functionally stripped, meaning that it does not produce an inverted
+response for the protected input pattern. This makes this implementation
+vulnurable to removal attacks. However, it can still be used to measure
+SAT attack resiliance.</p>
+<p>Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel,
+Mohammed Ashraf, Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017.
+Provably-Secure Logic Locking: From Theory To Practice. In Proceedings of
+the 2017 ACM SIGSAC Conference on Computer and Communications Security.
+Association for Computing Machinery, New York, NY, USA, 1601–1618.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>width</code></strong> :&ensp;<code>int</code></dt>
+<dd>the minimum fanin of the gates to lock.</dd>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of input patterns to lock.</dd>
+<dt><strong><code>target_output</code></strong> :&ensp;<code>str</code></dt>
+<dd>If defined, this output will be the one which is locked.
+Otherwise, a random output will be locked.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sfll_flex(c, width, n, target_output=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with SFLL-flex.
+
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
+
+    Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel,
+    Mohammed Ashraf, Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017.
+    Provably-Secure Logic Locking: From Theory To Practice. In Proceedings of
+    the 2017 ACM SIGSAC Conference on Computer and Communications Security.
+    Association for Computing Machinery, New York, NY, USA, 1601–1618.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            the minimum fanin of the gates to lock.
+    n: int
+            number of input patterns to lock.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) &lt; width:
+        target_inputs |= set(
+            random.sample(list(cl.inputs() - target_inputs), width - len(target_inputs))
+        )
+    target_inputs = list(target_inputs)
+
+    # create key
+    key = {f&#34;key_{i}&#34;: choice([True, False]) for i in range(width * n)}
+
+    # connect comparators
+    cl.add(&#34;flip_out&#34;, &#34;or&#34;)
+    cl.add(&#34;restore_out&#34;, &#34;or&#34;)
+
+    for j in range(n):
+        cl.add(f&#34;flip_and_{j}&#34;, &#34;and&#34;, fanout=&#34;flip_out&#34;)
+        cl.add(f&#34;restore_and_{j}&#34;, &#34;and&#34;, fanout=&#34;restore_out&#34;)
+
+    for i, inp in enumerate(random.sample(target_inputs, width)):
+        for j in range(n):
+            cl.add(f&#34;key_{i+j*width}&#34;, &#34;input&#34;)
+            cl.add(f&#34;hardcoded_key_{i}_{j}&#34;, &#34;1&#34; if key[f&#34;key_{i+j*width}&#34;] else &#34;0&#34;)
+            cl.add(
+                f&#34;restore_xor_{i}_{j}&#34;,
+                &#34;xor&#34;,
+                fanin=[f&#34;key_{i+j*width}&#34;, inp],
+                fanout=f&#34;restore_and_{j}&#34;,
+            )
+            cl.add(
+                f&#34;flip_xor_{i}_{j}&#34;,
+                &#34;xor&#34;,
+                fanin=[f&#34;hardcoded_key_{i}_{j}&#34;, inp],
+                fanout=f&#34;flip_and_{j}&#34;,
+            )
+
+    # flip output
+    old_out = cl.uid(f&#34;{target_output}_pre_lock&#34;)
+    cl = cg.tx.relabel(cl, {target_output: old_out})
+    cl.set_output(old_out, False)
+    cl.add(
+        target_output, &#34;xor&#34;, fanin=[old_out, &#34;restore_out&#34;, &#34;flip_out&#34;], output=True
+    )
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.sfll_hd"><code class="name flex">
+<span>def <span class="ident">sfll_hd</span></span>(<span>c, width, hd, target_output=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with SFLL-HD.</p>
+<p>Note that in this implementation the original circuit is not
+functionally stripped, meaning that it does not produce an inverted
+response for the protected input pattern. This makes this implementation
+vulnurable to removal attacks. However, it can still be used to measure
+SAT attack resiliance.</p>
+<p>Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
+Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
+Logic Locking: From Theory To Practice. In Proceedings of the 2017 ACM
+SIGSAC Conference on Computer and Communications Security (CCS ’17).
+Association for Computing Machinery, New York, NY, USA, 1601–1618.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>width</code></strong> :&ensp;<code>int</code></dt>
+<dd>key width, also the minimum fanin of the gates to lock.</dd>
+<dt><strong><code>hd</code></strong> :&ensp;<code>int</code></dt>
+<dd>the hamming distance to lock with, as explained in the paper.</dd>
+<dt><strong><code>target_output</code></strong> :&ensp;<code>str</code></dt>
+<dd>If defined, this output will be the one which is locked.
+Otherwise, a random output will be locked.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sfll_hd(c, width, hd, target_output=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with SFLL-HD.
+
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
+
+    Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
+    Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
+    Logic Locking: From Theory To Practice. In Proceedings of the 2017 ACM
+    SIGSAC Conference on Computer and Communications Security (CCS ’17).
+    Association for Computing Machinery, New York, NY, USA, 1601–1618.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            key width, also the minimum fanin of the gates to lock.
+    hd: int
+            the hamming distance to lock with, as explained in the paper.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # parse popcount
+    p = cg.logic.popcount(width)
+
+    if len(c.inputs()) &lt; width:
+        raise ValueError(f&#34;Not enough inputs to lock with width &#39;{width}&#39;&#34;)
+
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) &lt; width:
+        target_inputs |= set(
+            random.sample(list(cl.inputs() - target_inputs), width - len(target_inputs))
+        )
+    target_inputs = list(target_inputs)
+
+    # create key
+    key = {f&#34;key_{i}&#34;: random.choice([True, False]) for i in range(width)}
+
+    # instantiate and connect hd circuits
+    cl.add_subcircuit(p, &#34;flip_pop&#34;)
+    cl.add_subcircuit(p, &#34;restore_pop&#34;)
+
+    # connect inputs
+    for i, inp in enumerate(random.sample(target_inputs, width)):
+        cl.add(f&#34;key_{i}&#34;, &#34;input&#34;)
+        cl.add(f&#34;hardcoded_key_{i}&#34;, &#34;1&#34; if key[f&#34;key_{i}&#34;] else &#34;0&#34;)
+        cl.add(f&#34;restore_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;key_{i}&#34;, inp])
+        cl.add(f&#34;flip_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;hardcoded_key_{i}&#34;, inp])
+        cl.connect(f&#34;flip_xor_{i}&#34;, f&#34;flip_pop_in_{i}&#34;)
+        cl.connect(f&#34;restore_xor_{i}&#34;, f&#34;restore_pop_in_{i}&#34;)
+
+    # connect outputs
+    cl.add(&#34;flip_out&#34;, &#34;and&#34;)
+    cl.add(&#34;restore_out&#34;, &#34;and&#34;)
+    for i, v in enumerate(format(hd, f&#34;0{cg.utils.clog2(width)+1}b&#34;)[::-1]):
+        cl.add(f&#34;hd_{i}&#34;, v)
+        cl.add(
+            f&#34;restore_out_xnor_{i}&#34;,
+            &#34;xnor&#34;,
+            fanin=[f&#34;hd_{i}&#34;, f&#34;restore_pop_out_{i}&#34;],
+            fanout=&#34;restore_out&#34;,
+        )
+        cl.add(
+            f&#34;flip_out_xnor_{i}&#34;,
+            &#34;xnor&#34;,
+            fanin=[f&#34;hd_{i}&#34;, f&#34;flip_pop_out_{i}&#34;],
+            fanout=&#34;flip_out&#34;,
+        )
+
+    # flip output
+    old_out = cl.uid(f&#34;{target_output}_pre_lock&#34;)
+    cl = cg.tx.relabel(cl, {target_output: old_out})
+    cl.set_output(old_out, False)
+    cl.add(
+        target_output, &#34;xor&#34;, fanin=[old_out, &#34;restore_out&#34;, &#34;flip_out&#34;], output=True
+    )
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.trll"><code class="name flex">
+<span>def <span class="ident">trll</span></span>(<span>c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with Truly Random Logic Locking.</p>
+<p>Limaye, E. Kalligeros, N. Karousos, I. G. Karybali and O. Sinanoglu,
+"Thwarting All Logic Locking Attacks: Dishonest Oracle With Truly Random
+Logic Locking," in IEEE Transactions on Computer-Aided Design of Integrated
+Circuits and Systems, vol. 40, no. 9, pp. 1740-1753, Sept. 2021.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.Circuit</code></dt>
+<dd>The circuit to lock.</dd>
+<dt><strong><code>keylen</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of key bits to add.</dd>
+<dt><strong><code>s1_s2_ratio</code></strong> :&ensp;<code>int</code> or <code>str</code></dt>
+<dd>The ratio between number of key gate locations locked where an
+inverter exists in the original design (s1) or where an inverter
+does not exist in the original design (s2). The paper leaves this
+value at 1 (meaning s1=s2=keylen/2), but they note that this
+could be adjusted based on the ratio of the locations where there
+is an inverter in the original netlist. Setting this parameter
+to the string "infer" will do this adjustment. I.e.
+s1 = keylen<em>r, s2 = keylen</em>(1-r), where r is the number of
+inverters in the circuit divided by the total number of gates.</dd>
+<dt><strong><code>shuffle_key</code></strong> :&ensp;<code>bool</code></dt>
+<dd>By default, the key input labels are shuffled at the end of the
+algorithm so the labelling does not reveal which portion of the
+algorithm the key input was added during.</dd>
+<dt><strong><code>seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>Seed for the random selection of gates and shuffling of the key.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.Circuit, dict</code> of <code>str:bool</code></dt>
+<dd>The locked circuit and the correct key value for each key input.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with Truly Random Logic Locking.
+
+    Limaye, E. Kalligeros, N. Karousos, I. G. Karybali and O. Sinanoglu,
+    &#34;Thwarting All Logic Locking Attacks: Dishonest Oracle With Truly Random
+    Logic Locking,&#34; in IEEE Transactions on Computer-Aided Design of Integrated
+    Circuits and Systems, vol. 40, no. 9, pp. 1740-1753, Sept. 2021.
+
+    Parameters
+    ----------
+    c: circuitgraph.Circuit
+            The circuit to lock.
+    keylen: int
+            The number of key bits to add.
+    s1_s2_ratio: int or str
+            The ratio between number of key gate locations locked where an
+            inverter exists in the original design (s1) or where an inverter
+            does not exist in the original design (s2). The paper leaves this
+            value at 1 (meaning s1=s2=keylen/2), but they note that this
+            could be adjusted based on the ratio of the locations where there
+            is an inverter in the original netlist. Setting this parameter
+            to the string &#34;infer&#34; will do this adjustment. I.e.
+            s1 = keylen*r, s2 = keylen*(1-r), where r is the number of
+            inverters in the circuit divided by the total number of gates.
+    shuffle_key: bool
+            By default, the key input labels are shuffled at the end of the
+            algorithm so the labelling does not reveal which portion of the
+            algorithm the key input was added during.
+    seed: int
+            Seed for the random selection of gates and shuffling of the key.
+
+    Returns
+    -------
+    circuitgraph.Circuit, dict of str:bool
+            The locked circuit and the correct key value for each key input.
+
+    &#34;&#34;&#34;
+    rng = random.Random(seed)
+
+    cl = c.copy()
+
+    if keylen % 2 != 0:
+        raise NotImplementedError
+    if s1_s2_ratio == &#34;infer&#34;:
+        raise NotImplementedError
+
+    s1 = int((keylen // 2) * s1_s2_ratio)
+    if s1 &gt; keylen:
+        raise ValueError(f&#34;Unusable s1_s2_ratio: {s1_s2_ratio}&#34;)
+    s2 = keylen - s1
+
+    s1a = rng.randint(0, s1)
+    s1b = s1 - s1a
+
+    s2a = rng.randint(0, s2)
+    s2b = s2 - s2a
+
+    inv_gates = list(c.filter_type(&#34;not&#34;))
+    rng.shuffle(inv_gates)
+    rem_gates = list(
+        c.nodes()
+        - c.io()
+        - c.filter_type((&#34;not&#34;, &#34;bb_input&#34;, &#34;bb_output&#34;, &#34;0&#34;, &#34;1&#34;, &#34;x&#34;))
+    )
+    rng.shuffle(rem_gates)
+
+    j = 0
+    k = {}
+    # Replace existing inv_gates with XOR key-gates
+    for _ in range(s1a):
+        sel_gate = inv_gates.pop()
+        ki = f&#34;key_{j}&#34;
+        cl.add(ki, &#34;input&#34;)
+        k[ki] = True
+        cl.set_type(sel_gate, &#34;xor&#34;)
+        cl.connect(ki, sel_gate)
+        j += 1
+
+    # Add XOR key-gates before existing inv_gates
+    for _ in range(s1b):
+        sel_gate = inv_gates.pop()
+        ki = f&#34;key_{j}&#34;
+        cl.add(ki, &#34;input&#34;)
+        k[ki] = False
+        inv_fanin = cl.fanin(sel_gate)
+        assert len(inv_fanin) == 1
+        cl.disconnect(inv_fanin, sel_gate)
+        cl.add(f&#34;key_gate_{j}&#34;, &#34;xor&#34;, fanin=inv_fanin | {ki}, fanout=sel_gate)
+        j += 1
+
+    # Add XOR key-gates and INV gates after existing rem_gates
+    for _ in range(s2a):
+        sel_gate = rem_gates.pop()
+        ki = f&#34;key_{j}&#34;
+        cl.add(ki, &#34;input&#34;)
+        k[ki] = True
+        sel_fanout = cl.fanout(sel_gate)
+        cl.disconnect(sel_gate, sel_fanout)
+        cl.add(f&#34;key_gate_{j}&#34;, &#34;xor&#34;, fanin=(sel_gate, ki))
+        cl.add(f&#34;key_inv_{j}&#34;, &#34;not&#34;, fanin=f&#34;key_gate_{j}&#34;, fanout=sel_fanout)
+        j += 1
+
+    # Add XOR key-gates after existing rem_gates
+    for _ in range(s2b):
+        sel_gate = rem_gates.pop()
+        ki = f&#34;key_{j}&#34;
+        cl.add(ki, &#34;input&#34;)
+        k[ki] = False
+        sel_fanout = cl.fanout(sel_gate)
+        cl.disconnect(sel_gate, sel_fanout)
+        cl.add(f&#34;key_gate_{j}&#34;, &#34;xor&#34;, fanin=(sel_gate, ki), fanout=sel_fanout)
+        j += 1
+
+    # Shuffle keys
+    if shuffle_key:
+        new_order = list(range(keylen))
+        rng.shuffle(new_order)
+        shuffled_k = {}
+        intermediate_mapping = {}
+        final_mapping = {}
+        for old_idx, new_idx in enumerate(new_order):
+            shuffled_k[f&#34;key_{new_idx}&#34;] = k[f&#34;key_{old_idx}&#34;]
+            intermediate_mapping[f&#34;key_{old_idx}&#34;] = f&#34;key_{old_idx}_temp&#34;
+            final_mapping[f&#34;key_{old_idx}_temp&#34;] = f&#34;key_{new_idx}&#34;
+        cl.relabel(intermediate_mapping)
+        cl.relabel(final_mapping)
+        return cl, shuffled_k
+    return cl, k</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.tt_lock"><code class="name flex">
+<span>def <span class="ident">tt_lock</span></span>(<span>c, width, target_output=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with TTLock.</p>
+<p>Note that in this implementation the original circuit is not
+functionally stripped, meaning that it does not produce an inverted
+response for the protected input pattern. This makes this implementation
+vulnurable to removal attacks. However, it can still be used to measure
+SAT attack resiliance.</p>
+<p>M. Yasin, A. Sengupta, B. Schafer, Y. Makris, O. Sinanoglu, and
+J. Rajendran, “What to Lock?: Functional and Parametric Locking,”
+in Great Lakes Symposium on VLSI, pp. 351–356, 2017.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>width</code></strong> :&ensp;<code>int</code></dt>
+<dd>the minimum fanin of the gates to lock.</dd>
+<dt><strong><code>target_output</code></strong> :&ensp;<code>str</code></dt>
+<dd>If defined, this output will be the one which is locked.
+Otherwise, a random output will be locked.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tt_lock(c, width, target_output=None):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with TTLock.
+
+    Note that in this implementation the original circuit is not
+    functionally stripped, meaning that it does not produce an inverted
+    response for the protected input pattern. This makes this implementation
+    vulnurable to removal attacks. However, it can still be used to measure
+    SAT attack resiliance.
+
+    M. Yasin, A. Sengupta, B. Schafer, Y. Makris, O. Sinanoglu, and
+    J. Rajendran, “What to Lock?: Functional and Parametric Locking,”
+    in Great Lakes Symposium on VLSI, pp. 351–356, 2017.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            the minimum fanin of the gates to lock.
+    target_output: str
+            If defined, this output will be the one which is locked.
+            Otherwise, a random output will be locked.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    if len(c.inputs()) &lt; width:
+        raise ValueError(f&#34;Not enough inputs to lock with width &#39;{width}&#39;&#34;)
+
+    if not target_output:
+        target_output = random.choice(list(cl.outputs()))
+
+    # get inputs to lock
+    target_inputs = cl.startpoints(target_output)
+    if len(target_inputs) &lt; width:
+        target_inputs |= set(
+            random.sample(list(cl.inputs() - target_inputs), width - len(target_inputs))
+        )
+    target_inputs = list(target_inputs)
+
+    # create key
+    key = {f&#34;key_{i}&#34;: random.choice([True, False]) for i in range(width)}
+
+    # connect comparators
+    cl.add(&#34;flip_out&#34;, &#34;and&#34;)
+    cl.add(&#34;restore_out&#34;, &#34;and&#34;)
+    for i, inp in enumerate(random.sample(target_inputs, width)):
+        cl.add(f&#34;key_{i}&#34;, &#34;input&#34;)
+        cl.add(f&#34;hardcoded_key_{i}&#34;, &#34;1&#34; if key[f&#34;key_{i}&#34;] else &#34;0&#34;)
+        cl.add(f&#34;restore_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;key_{i}&#34;, inp], fanout=&#34;restore_out&#34;)
+        cl.add(
+            f&#34;flip_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;hardcoded_key_{i}&#34;, inp], fanout=&#34;flip_out&#34;
+        )
+
+    # flip output
+    old_out = cl.uid(f&#34;{target_output}_pre_lock&#34;)
+    cl = cg.tx.relabel(cl, {target_output: old_out})
+    cl.set_output(old_out, False)
+    cl.add(
+        target_output, &#34;xor&#34;, fanin=[old_out, &#34;restore_out&#34;, &#34;flip_out&#34;], output=True
+    )
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.tt_lock_sen"><code class="name flex">
+<span>def <span class="ident">tt_lock_sen</span></span>(<span>c, width, nsamples=10)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with TTLock-Sen.</p>
+<p>Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi,
+“Sensitivity Analysis of Locked Circuits,” in
+Logic for Programming, Artificial Intelligence and Reasoning
+(LPAR-23), pp. 483-497. EPiC Series in Computing 73, EasyChair.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>width</code></strong> :&ensp;<code>int</code></dt>
+<dd>the minimum fanin of the gates to lock.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tt_lock_sen(c, width, nsamples=10):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with TTLock-Sen.
+
+    Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi,
+    “Sensitivity Analysis of Locked Circuits,” in
+    Logic for Programming, Artificial Intelligence and Reasoning
+    (LPAR-23), pp. 483-497. EPiC Series in Computing 73, EasyChair.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    width: int
+            the minimum fanin of the gates to lock.
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # find output with large enough fanin
+    potential_outs = [o for o in cl.outputs() if len(cl.startpoints(o)) &gt;= width]
+    if not potential_outs:
+        raise ValueError(f&#34;Not enough inputs to lock with width &#39;{width}&#39;&#34;)
+
+    # find average sensitivities
+    A = {}
+    N = {}
+    S = {}
+    for o in potential_outs:
+        # build sensitivity circuit
+        s = cg.tx.sensitivity_transform(c, o)
+        startpoints = c.startpoints(o)
+        s_out = {o for o in s.outputs() if &#34;difference&#34; in o}
+
+        # est avg sensitivity
+        total = 0
+        for i in range(nsamples):
+            input_val = {i: randint(0, 1) for i in startpoints}
+            model = cg.sat.solve(s, input_val)
+            sen = sum(model[o] for o in s_out)
+            total += sen
+        A[o] = int(total / nsamples)
+        N[o] = len(startpoints)
+        S[o] = s
+
+    # find output + input value with closest to avg sen
+    def find_input():
+        b = 0
+        while b &lt; max(N.values()):
+            for o in potential_outs:
+                upper = min(N[o], int(N[o] - A[o] + b))
+                lower = max(0, int(N[o] - A[o] - b))
+                us = cg.utils.int_to_bin(upper, cg.utils.clog2(N[o]))
+                ls = cg.utils.int_to_bin(lower, cg.utils.clog2(N[o]))
+                for sv in [us, ls]:
+                    model = cg.sat.solve(
+                        S[o], {f&#34;sen_out_{i}&#34;: v for i, v in enumerate(sv)}
+                    )
+                    if model:
+                        out = o
+                        startpoints = c.startpoints(o)
+
+                        key = {f&#34;key_{i}&#34;: model[n] for i, n in enumerate(startpoints)}
+                        return key, startpoints, out
+            b += 1
+
+    key, startpoints, out = find_input()
+
+    # connect comparators
+    cl.add(&#34;flip_out&#34;, &#34;and&#34;)
+    cl.add(&#34;restore_out&#34;, &#34;and&#34;)
+    for i, inp in enumerate(startpoints):
+        cl.add(f&#34;key_{i}&#34;, &#34;input&#34;)
+        cl.add(f&#34;hardcoded_key_{i}&#34;, &#34;1&#34; if key[f&#34;key_{i}&#34;] else &#34;0&#34;)
+        cl.add(f&#34;restore_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;key_{i}&#34;, inp], fanout=&#34;restore_out&#34;)
+        cl.add(
+            f&#34;flip_xor_{i}&#34;, &#34;xor&#34;, fanin=[f&#34;hardcoded_key_{i}&#34;, inp], fanout=&#34;flip_out&#34;
+        )
+
+    # flip output
+    old_out = cl.uid(f&#34;{out}_pre_lock&#34;)
+    cl = cg.tx.relabel(cl, {out: old_out})
+    cl.set_output(old_out, False)
+    cl.add(out, &#34;xor&#34;, fanin=[old_out, &#34;restore_out&#34;, &#34;flip_out&#34;], output=True)
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+<dt id="logiclocking.locks.xor_lock"><code class="name flex">
+<span>def <span class="ident">xor_lock</span></span>(<span>c, keylen, key_prefix='key_', replacement=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Locks a circuitgraph with a random xor lock.</p>
+<p>J. A. Roy, F. Koushanfar and I. L. Markov, "Ending Piracy of Integrated
+Circuits," in Computer, vol. 43, no. 10, pp. 30-38, Oct. 2010.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>circuitgraph.CircuitGraph</code></dt>
+<dd>Circuit to lock.</dd>
+<dt><strong><code>keylen</code></strong> :&ensp;<code>int</code></dt>
+<dd>the number of bits in the key</dd>
+<dt><strong><code>replacement</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, the same line can be locked twice (resulting in a chain
+of key gates)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>circuitgraph.CircuitGraph, dict</code> of <code>str:bool</code></dt>
+<dd>the locked circuit and the correct key value for each key input</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def xor_lock(c, keylen, key_prefix=&#34;key_&#34;, replacement=False):
+    &#34;&#34;&#34;
+    Locks a circuitgraph with a random xor lock.
+
+    J. A. Roy, F. Koushanfar and I. L. Markov, &#34;Ending Piracy of Integrated
+    Circuits,&#34; in Computer, vol. 43, no. 10, pp. 30-38, Oct. 2010.
+
+    Parameters
+    ----------
+    c: circuitgraph.CircuitGraph
+            Circuit to lock.
+    keylen: int
+            the number of bits in the key
+    replacement: bool
+            If True, the same line can be locked twice (resulting in a chain
+            of key gates)
+
+    Returns
+    -------
+    circuitgraph.CircuitGraph, dict of str:bool
+            the locked circuit and the correct key value for each key input
+
+    &#34;&#34;&#34;
+    # create copy to lock
+    cl = c.copy()
+
+    # randomly select gates to lock
+    if replacement:
+        gates = choices(tuple(cl.nodes() - cl.outputs()), k=keylen)
+    else:
+        gates = sample(tuple(cl.nodes() - cl.outputs()), keylen)
+
+    # insert key gates
+    key = {}
+    for i, gate in enumerate(gates):
+        # select random key value
+        key[f&#34;{key_prefix}{i}&#34;] = choice([True, False])
+
+        # create xor/xnor,input
+        gate_type = &#34;xnor&#34; if key[f&#34;{key_prefix}{i}&#34;] else &#34;xor&#34;
+        fanout = cl.fanout(gate)
+        cl.disconnect(gate, fanout)
+        cl.add(f&#34;key_gate_{i}&#34;, gate_type, fanin=gate, fanout=fanout)
+        cl.add(f&#34;{key_prefix}{i}&#34;, &#34;input&#34;, fanout=f&#34;key_gate_{i}&#34;)
+
+    cg.lint(cl)
+    return cl, key</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<img src="circuitgraph.png" alt="" style="margin-bottom: 31px;">
+<a class="github-button" href="https://github.com/circuitgraph/logiclocking"><b>GitHub</b></a>
+</header>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="logiclocking" href="index.html">logiclocking</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="logiclocking.locks.full_lock" href="#logiclocking.locks.full_lock">full_lock</a></code></li>
+<li><code><a title="logiclocking.locks.full_lock_mux" href="#logiclocking.locks.full_lock_mux">full_lock_mux</a></code></li>
+<li><code><a title="logiclocking.locks.inter_lock" href="#logiclocking.locks.inter_lock">inter_lock</a></code></li>
+<li><code><a title="logiclocking.locks.lebl" href="#logiclocking.locks.lebl">lebl</a></code></li>
+<li><code><a title="logiclocking.locks.lut_lock" href="#logiclocking.locks.lut_lock">lut_lock</a></code></li>
+<li><code><a title="logiclocking.locks.mux_lock" href="#logiclocking.locks.mux_lock">mux_lock</a></code></li>
+<li><code><a title="logiclocking.locks.random_lut_lock" href="#logiclocking.locks.random_lut_lock">random_lut_lock</a></code></li>
+<li><code><a title="logiclocking.locks.sfll_flex" href="#logiclocking.locks.sfll_flex">sfll_flex</a></code></li>
+<li><code><a title="logiclocking.locks.sfll_hd" href="#logiclocking.locks.sfll_hd">sfll_hd</a></code></li>
+<li><code><a title="logiclocking.locks.trll" href="#logiclocking.locks.trll">trll</a></code></li>
+<li><code><a title="logiclocking.locks.tt_lock" href="#logiclocking.locks.tt_lock">tt_lock</a></code></li>
+<li><code><a title="logiclocking.locks.tt_lock_sen" href="#logiclocking.locks.tt_lock_sen">tt_lock_sen</a></code></li>
+<li><code><a title="logiclocking.locks.xor_lock" href="#logiclocking.locks.xor_lock">xor_lock</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
