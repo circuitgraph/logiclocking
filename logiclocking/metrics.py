@@ -9,12 +9,12 @@ def corruptibility(cl, key):
     """Apprixmate corruptability of a locked circuit for a specific key."""
     # set up miter
     ins = set(cl.startpoints() - key.keys())
-    m = cg.miter(cl, startpoints=ins)
+    m = cg.tx.miter(cl, startpoints=ins)
     set_key = {f"c0_{k}": v for k, v in key.items()}
     independent_set = {f"c1_{k}" for k in key} | ins
 
     # run approx
-    errors = cg.approx_model_count(m, {**set_key, "sat": True}, independent_set)
+    errors = cg.sat.approx_model_count(m, {**set_key, "sat": True}, independent_set)
 
     return errors / 2 ** len(independent_set)
 
@@ -23,12 +23,12 @@ def key_corruption(cl, key, attack_key):
     """Approximate corruption between two keys."""
     # set up miter
     ins = set(cl.startpoints() - key.keys())
-    m = cg.miter(cl, startpoints=ins)
+    m = cg.tx.miter(cl, startpoints=ins)
     c0_key = {f"c0_{k}": v for k, v in key.items()}
     c1_key = {f"c1_{k}": v for k, v in attack_key.items()}
 
     # run approx
-    errors = cg.approx_model_count(m, {**c0_key, **c1_key, "sat": True}, ins)
+    errors = cg.sat.approx_model_count(m, {**c0_key, **c1_key, "sat": True}, ins)
 
     return errors / 2 ** len(ins)
 
@@ -40,7 +40,7 @@ def min_corruption(cl, key, e=0.1, min_samples=10, tol=0.1):
 
     # get initial key corruptions
     key_corruptions = []
-    for i in range(min_samples):
+    for _ in range(min_samples):
         sampled_key = {k: random() < 0.5 for k in key}
         key_corruptions.append(key_corruption(cl, key, sampled_key))
 
@@ -52,12 +52,15 @@ def min_corruption(cl, key, e=0.1, min_samples=10, tol=0.1):
     return len([kc for kc in key_corruptions if kc >= e]) / len(key_corruptions)
 
 
-def avg_avg_sensitivity(cl, key={}):
+def avg_avg_sensitivity(cl, key=None):
     """Get the average average sensitivity under a given key."""
     # set key
-    cl_key = cl.copy()
-    for k, v in key.items():
-        cl_key.set_type(k, v)
+    if key:
+        cl_key = cl.copy()
+        for k, v in key.items():
+            cl_key.set_type(k, v)
+    else:
+        cl_key = cl
 
     avg_sens = []
     for o in cl.outputs():

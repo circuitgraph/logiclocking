@@ -4,14 +4,10 @@ from itertools import product, zip_longest
 from random import choice, choices, randint, sample, shuffle
 
 import circuitgraph as cg
-from pysat.card import CardEnc
-from pysat.formula import IDPool
-from pysat.solvers import Cadical
 
 
 def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
-    """
-    Locks a circuitgraph with Truly Random Logic Locking.
+    """Locks a circuitgraph with Truly Random Logic Locking.
 
     Limaye, E. Kalligeros, N. Karousos, I. G. Karybali and O. Sinanoglu,
     "Thwarting All Logic Locking Attacks: Dishonest Oracle With Truly Random
@@ -45,7 +41,6 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
     -------
     circuitgraph.Circuit, dict of str:bool
             The locked circuit and the correct key value for each key input.
-
     """
     rng = random.Random(seed)
 
@@ -141,8 +136,7 @@ def trll(c, keylen, s1_s2_ratio=1, shuffle_key=True, seed=None):
 
 
 def xor_lock(c, keylen, key_prefix="key_", replacement=False):
-    """
-    Locks a circuitgraph with a random xor lock.
+    """Locks a circuitgraph with a random xor lock.
 
     J. A. Roy, F. Koushanfar and I. L. Markov, "Ending Piracy of Integrated
     Circuits," in Computer, vol. 43, no. 10, pp. 30-38, Oct. 2010.
@@ -161,7 +155,6 @@ def xor_lock(c, keylen, key_prefix="key_", replacement=False):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # create copy to lock
     cl = c.copy()
@@ -190,8 +183,7 @@ def xor_lock(c, keylen, key_prefix="key_", replacement=False):
 
 
 def mux_lock(c, keylen, avoid_loops=False, key_prefix="key_"):
-    """
-    Locks a circuitgraph with a mux lock.
+    """Locks a circuitgraph with a mux lock.
 
     J. Rajendran et al., "Fault Analysis-Based Logic Encryption," in IEEE
     Transactions on Computers, vol. 64, no. 2, pp. 410-424, Feb. 2015,
@@ -210,7 +202,6 @@ def mux_lock(c, keylen, avoid_loops=False, key_prefix="key_"):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # create copy to lock
     cl = c.copy()
@@ -266,8 +257,7 @@ def mux_lock(c, keylen, avoid_loops=False, key_prefix="key_"):
 
 
 def random_lut_lock(c, num_gates, lut_width, gates=None):
-    """
-    Locks a circuitgraph by replacing random gates with LUTs.
+    """Locks a circuitgraph by replacing random gates with LUTs.
 
     This is kind of like applying LUT-lock with no replacement strategy.
     (H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
@@ -290,13 +280,12 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # create copy to lock
     cl = c.copy()
 
     # parse mux
-    m = cg.logic.mux(2 ** lut_width)
+    m = cg.logic.mux(2**lut_width)
 
     # randomly select gates
     potential_gates = {g for g in cl.nodes() - cl.io() if len(cl.fanin(g)) <= lut_width}
@@ -318,7 +307,6 @@ def random_lut_lock(c, num_gates, lut_width, gates=None):
     # insert key gates
     key = {}
     for i, gate in enumerate(gates):
-
         fanout = list(cl.fanout(gate))
         fanin = list(cl.fanin(gate))
         try:
@@ -369,8 +357,7 @@ def lut_lock(
     rank_by_shared_fanin=False,
     key_prefix="key_",
 ):
-    """
-    Locks a circuitgraph with NB2-MO-HSC LUT-lock.
+    """Locks a circuitgraph with NB2-MO-HSC LUT-lock.
 
     H. Mardani Kamali, K. Zamiri Azar, K. Gaj, H. Homayoun and A. Sasan,
     "LUT-Lock: A Novel LUT-Based Logic Obfuscation for FPGA-Bitstream and
@@ -403,7 +390,6 @@ def lut_lock(
     ------
     ValueError
             if there are not enough viable gates to lock.
-
     """
     # create copy to lock
     cl = c.copy()
@@ -538,14 +524,13 @@ def lut_lock(
 
 
 def tt_lock(c, width, target_output=None):
-    """
-    Locks a circuitgraph with TTLock.
+    """Locks a circuitgraph with TTLock.
 
     Note that in this implementation the original circuit is not
     functionally stripped, meaning that it does not produce an inverted
     response for the protected input pattern. This makes this implementation
-    vulnurable to removal attacks. However, it can still be used to measure
-    SAT attack resiliance.
+    vulnerable to removal attacks. However, it can still be used to measure
+    SAT attack resilience.
 
     M. Yasin, A. Sengupta, B. Schafer, Y. Makris, O. Sinanoglu, and
     J. Rajendran, “What to Lock?: Functional and Parametric Locking,”
@@ -565,7 +550,6 @@ def tt_lock(c, width, target_output=None):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # create copy to lock
     cl = c.copy()
@@ -611,8 +595,7 @@ def tt_lock(c, width, target_output=None):
 
 
 def tt_lock_sen(c, width, nsamples=10):
-    """
-    Locks a circuitgraph with TTLock-Sen.
+    """Locks a circuitgraph with TTLock-Sen.
 
     Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi,
     “Sensitivity Analysis of Locked Circuits,” in
@@ -630,7 +613,6 @@ def tt_lock_sen(c, width, nsamples=10):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # create copy to lock
     cl = c.copy()
@@ -706,14 +688,13 @@ def tt_lock_sen(c, width, nsamples=10):
 
 
 def sfll_hd(c, width, hd, target_output=None):
-    """
-    Locks a circuitgraph with SFLL-HD.
+    """Locks a circuitgraph with SFLL-HD.
 
     Note that in this implementation the original circuit is not
     functionally stripped, meaning that it does not produce an inverted
     response for the protected input pattern. This makes this implementation
-    vulnurable to removal attacks. However, it can still be used to measure
-    SAT attack resiliance.
+    vulnerable to removal attacks. However, it can still be used to measure
+    SAT attack resilience.
 
     Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel, Mohammed Ashraf,
     Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017. Provably-Secure
@@ -737,7 +718,6 @@ def sfll_hd(c, width, hd, target_output=None):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # create copy to lock
     cl = c.copy()
@@ -806,14 +786,13 @@ def sfll_hd(c, width, hd, target_output=None):
 
 
 def sfll_flex(c, width, n, target_output=None):
-    """
-    Locks a circuitgraph with SFLL-flex.
+    """Locks a circuitgraph with SFLL-flex.
 
     Note that in this implementation the original circuit is not
     functionally stripped, meaning that it does not produce an inverted
     response for the protected input pattern. This makes this implementation
-    vulnurable to removal attacks. However, it can still be used to measure
-    SAT attack resiliance.
+    vulnerable to removal attacks. However, it can still be used to measure
+    SAT attack resilience.
 
     Muhammad Yasin, Abhrajit Sengupta, Mohammed Thari Nabeel,
     Mohammed Ashraf, Jeyavijayan (JV) Rajendran, and Ozgur Sinanoglu. 2017.
@@ -837,7 +816,6 @@ def sfll_flex(c, width, n, target_output=None):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # create copy to lock
     cl = c.copy()
@@ -897,7 +875,7 @@ def _connect_banyan(cl, swb_ins, swb_outs, bw):
     I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
     for i in range(cg.utils.clog2(J)):
-        r = J / (2 ** i)
+        r = J / (2**i)
         for j in range(J):
             t = (j % r) >= (r / 2)
             # straight
@@ -931,7 +909,7 @@ def _connect_banyan_bb(cl, swb_ins, swb_outs, bw):
     I = int(2 * cg.utils.clog2(bw) - 2)
     J = int(bw / 2)
     for i in range(cg.utils.clog2(J)):
-        r = J / (2 ** i)
+        r = J / (2**i)
         for j in range(J):
             t = (j % r) >= (r / 2)
             # straight
@@ -979,8 +957,7 @@ def _connect_banyan_bb(cl, swb_ins, swb_outs, bw):
 
 
 def full_lock(c, bw, lw, avoid_loops=False):
-    """
-    Locks a circuitgraph with Full-Lock.
+    """Locks a circuitgraph with Full-Lock.
 
     Hadi Mardani Kamali, Kimia Zamiri Azar, Houman Homayoun,
     and Avesta Sasan. 2019. Full-Lock: Hard Distributions of SAT instances
@@ -1004,7 +981,6 @@ def full_lock(c, bw, lw, avoid_loops=False):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # lock with luts
     if avoid_loops:
@@ -1088,8 +1064,7 @@ def full_lock(c, bw, lw, avoid_loops=False):
 
 
 def full_lock_mux(c, bw, lw):
-    """
-    Locks a circuitgraph with a muxed-based model of Full-Lock.
+    """Locks a circuitgraph with a muxed-based model of Full-Lock.
 
     Uses muxes instead of the Banyan network, a relaxation that breaks symmetry
     and simplifies the model substantially.
@@ -1111,7 +1086,6 @@ def full_lock_mux(c, bw, lw):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     # first generate banyan, to get a valid mapping for the key
     b = cg.Circuit()
@@ -1209,8 +1183,7 @@ def full_lock_mux(c, bw, lw):
 
 
 def inter_lock(c, bw, reduced_swb=False):
-    """
-    Locks a circuitgraph with InterLock.
+    """Locks a circuitgraph with InterLock.
 
     Kamali, Hadi Mardani, Kimia Zamiri Azar, Houman Homayoun, and Avesta Sasan.
     "Interlock: An intercorrelated logic and routing locking."
@@ -1233,7 +1206,6 @@ def inter_lock(c, bw, reduced_swb=False):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
     cl = c.copy()
     cg.lint(cl)
@@ -1271,7 +1243,11 @@ def inter_lock(c, bw, reduced_swb=False):
     sbb_inputs = ["in_0", "in_1", "ex_in_0", "ex_in_1", "key_0"]
     if not reduced_swb:
         sbb_inputs += ["key_1", "key_2"]
-    sbb = cg.BlackBox("switch", sbb_inputs, ["out_0", "out_1"],)
+    sbb = cg.BlackBox(
+        "switch",
+        sbb_inputs,
+        ["out_0", "out_1"],
+    )
 
     # Select paths to embed in the routing network
     path_length = 2 * cg.utils.clog2(bw) - 2
@@ -1395,8 +1371,7 @@ def inter_lock(c, bw, reduced_swb=False):
 
 
 def lebl(c, bw, ng):
-    """
-    Locks a circuitgraph with Logic-Enhanced Banyan Locking.
+    """Locks a circuitgraph with Logic-Enhanced Banyan Locking.
 
     Joseph Sweeney, Marijn J.H. Heule, and Lawrence Pileggi Modeling Techniques
     for Logic Locking. In Proceedings of the International Conference on
@@ -1415,8 +1390,11 @@ def lebl(c, bw, ng):
     -------
     circuitgraph.CircuitGraph, dict of str:bool
             the locked circuit and the correct key value for each key input
-
     """
+    from pysat.card import CardEnc
+    from pysat.formula import IDPool
+    from pysat.solvers import Cadical
+
     # create copy to lock
     cl = c.copy()
 
@@ -1581,8 +1559,6 @@ def lebl(c, bw, ng):
         c.nodes()
         - (c.startpoints() | set(mapping.values()) | mapping.keys() | c.endpoints())
     )
-
-    # selected_fo = {}
 
     # connect switch boxes
     for i, bn in enumerate(swb_outs):

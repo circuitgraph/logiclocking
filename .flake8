@@ -1,0 +1,8 @@
+[flake8]
+select = C,E,F,W,B,B950
+extend-ignore = E203,W503,E501,E741
+exclude =
+    .git,
+    __pycache__,
+    pepr.egg-info
+docstring-convention = google
